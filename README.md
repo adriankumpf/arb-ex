@@ -23,3 +23,10 @@ iex> Arb.activate([1, 4, 7])
 iex> Arb.get_active()
 {:ok, [1, 4, 7]}
 ```
+
+## Development
+
+```bash
+docker build -t arb-ex .
+docker run --privileged -it arb-ex
+```
