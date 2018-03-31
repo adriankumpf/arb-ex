@@ -1,0 +1,15 @@
+[package]
+name = "arb"
+version = "0.1.0"
+authors = ["Adrian Kumpf <adrian.kumpf@posteo.de>"]
+
+[lib]
+name = "arb"
+path = "src/lib.rs"
+crate-type = ["dylib"]
+
+[dependencies]
+rustler = "0.16.0"
+rustler_codegen = "0.16.0"
+lazy_static = "0.2"
+abacom-relay-board = { git = "https://github.com/adriankumpf/abacom-relay-board" }
