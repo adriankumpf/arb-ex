@@ -27,8 +27,8 @@ mod atoms {
 }
 
 #[derive(NifStruct)]
-#[module = "Arb.Native.ActivateOptions"]
-struct ActivateOptions {
+#[module = "Arb.Native.Options"]
+struct Options {
     pub port: Option<u8>,
     pub verify: bool,
 }
@@ -62,7 +62,7 @@ fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>>
         .filter(|&r| r != 0)
         .fold(0, |acc, r| acc | 1 << (r - 1));
 
-    let options: ActivateOptions = args[1].decode()?;
+    let options: Options = args[1].decode()?;
 
     match abacom_relay_board::switch_relays(relays, options.verify, options.port) {
         Err(err) => Ok(arb_error_to_term(env, err)),
@@ -70,10 +70,32 @@ fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>>
     }
 }
 
+fn get_active<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let port: Option<u8> = args[0].decode()?;
+
+    let result = match abacom_relay_board::get_relays(port) {
+        Err(err) => return Ok(arb_error_to_term(env, err)),
+        Ok(inner) => inner,
+    };
+
+    let active_relays: Vec<u8> = (0..8)
+        .filter_map(|m| {
+            if (1 << m) & result != 0 {
+                Some(m + 1)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok((atoms::ok(), active_relays).encode(env))
+}
+
 rustler_export_nifs! {
     "Elixir.Arb.Native",
     [
-        ("activate", 2, activate)
+        ("activate", 2, activate),
+        ("get_active", 1, get_active)
     ],
     None
 }
