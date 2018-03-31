@@ -8,6 +8,9 @@ defmodule Arb do
   @doc """
   Given a list of ids turns on the corresponding relays. An empty list turns off all relays.
 
+  The relays are labeled from 1 to 8 according to the
+  [data sheet](http://www.abacom-online.de/div/ABACOM_USB_LRB.pdf).
+
   ## Options
 
   The accepted options are:
@@ -28,7 +31,7 @@ defmodule Arb do
   def activate(_ids, _opts), do: {:error, :invalid_args}
 
   @doc """
-  Returns a list of ids whose relays are active.
+  Returns ids of active relays.
 
   ## Examples
 

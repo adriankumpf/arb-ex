@@ -5,7 +5,7 @@ extern crate rustler;
 #[macro_use]
 extern crate rustler_codegen;
 
-extern crate abacom_relay_board;
+extern crate arb;
 
 use rustler::{NifEncoder, NifEnv, NifResult, NifTerm, types::NifListIterator};
 
@@ -33,8 +33,8 @@ struct Options {
     pub verify: bool,
 }
 
-fn arb_error_to_term<'a>(env: NifEnv<'a>, err: abacom_relay_board::Error) -> NifTerm<'a> {
-    use abacom_relay_board::Error;
+fn arb_error_to_term<'a>(env: NifEnv<'a>, err: arb::Error) -> NifTerm<'a> {
+    use arb::Error;
 
     let error = match err {
         Error::NotFound => atoms::not_found().encode(env),
@@ -64,7 +64,7 @@ fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>>
 
     let options: Options = args[1].decode()?;
 
-    match abacom_relay_board::switch_relays(relays, options.verify, options.port) {
+    match arb::set_status(relays, options.verify, options.port) {
         Err(err) => Ok(arb_error_to_term(env, err)),
         Ok(()) => Ok(atoms::ok().encode(env)),
     }
@@ -73,7 +73,7 @@ fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>>
 fn get_active<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
     let port: Option<u8> = args[0].decode()?;
 
-    let result = match abacom_relay_board::get_relays(port) {
+    let result = match arb::get_status(port) {
         Err(err) => return Ok(arb_error_to_term(env, err)),
         Ok(inner) => inner,
     };
