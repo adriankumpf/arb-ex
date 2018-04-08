@@ -11,5 +11,7 @@ defmodule Arb.Native do
 
   def get_active(_port), do: error()
 
+  def reset(_port), do: error()
+
   defp error, do: :erlang.nif_error(:nif_not_loaded)
 end

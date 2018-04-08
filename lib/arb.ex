@@ -43,4 +43,18 @@ defmodule Arb do
   def get_active(port \\ nil)
   def get_active(port) when is_integer(port) or is_nil(port), do: Native.get_active(port)
   def get_active(_port), do: {:error, :invalid_args}
+
+  @doc """
+  Resets the relay board.
+
+  ## Examples
+
+      iex> Arb.reset()
+      :ok
+
+  """
+  @spec reset(integer) :: {:ok, list(integer)} | {:error, atom}
+  def reset(port \\ nil)
+  def reset(port) when is_integer(port) or is_nil(port), do: Native.reset(port)
+  def reset(_port), do: {:error, :invalid_args}
 end

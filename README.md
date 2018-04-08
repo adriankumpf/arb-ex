@@ -17,7 +17,7 @@ Add `:arb` to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:arb, "~> 0.1.0"}
+    {:arb, "~> 0.2.0"}
   ]
 end
 ```

@@ -91,11 +91,21 @@ fn get_active<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a
     Ok((atoms::ok(), active_relays).encode(env))
 }
 
+fn reset<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+    let port: Option<u8> = args[0].decode()?;
+
+    match arb::reset(port) {
+        Err(err) => return Ok(arb_error_to_term(env, err)),
+        Ok(()) => Ok(atoms::ok().encode(env)),
+    }
+}
+
 rustler_export_nifs! {
     "Elixir.Arb.Native",
     [
         ("activate", 2, activate),
-        ("get_active", 1, get_active)
+        ("get_active", 1, get_active),
+        ("reset", 1, reset)
     ],
     None
 }
