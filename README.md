@@ -10,8 +10,6 @@ In order to compile a recent version of `rust` must be installed (tested with 1.
 
 ### Installation
 
-**Note:** this package is still in beta and thus not yet available on Hex.
-
 Add `:arb` to your list of dependencies:
 
 ```elixir

@@ -9,7 +9,11 @@ defmodule Arb.MixProject do
       start_permanent: Mix.env() == :prod,
       compilers: [:rustler] ++ Mix.compilers(),
       rustler_crates: rustler_crates(),
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      docs: docs(),
+      source_url: "https://github.com/adriankumpf/arb-ex"
     ]
   end
 
@@ -24,7 +28,38 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.16.0"}
+      {:rustler, "~> 0.16.0"},
+      {:ex_doc, "~> 0.16", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description() do
+    """
+    An Elixir NIF for controlling the ABACOM CH341A relay board.
+    """
+  end
+
+  defp package() do
+    [
+      files: [
+        "lib",
+        "priv",
+        "native/arb/src",
+        "native/arb/Cargo*",
+        "mix.exs",
+        "README*",
+        "LICENSE*"
+      ],
+      maintainers: ["Adrian Kumpf"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/adriankumpf/arb-ex"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "Arb",
+      extras: ["README.md"]
     ]
   end
 end

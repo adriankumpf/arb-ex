@@ -31,7 +31,7 @@ defmodule Arb do
   def activate(_ids, _opts), do: {:error, :invalid_args}
 
   @doc """
-  Returns ids of active relays.
+  Returns the ids of active relays.
 
   ## Examples
 
@@ -46,6 +46,13 @@ defmodule Arb do
 
   @doc """
   Resets the relay board.
+
+  If, under some circumstances, relay board operations fail due to a USB error
+  e.g. `{:error, {:usb, "Input/Output Error"}}`, this function may resolve
+  the issue by reseting the relay board. The effect is similar to replugging
+  the device.
+
+  **Note:** Previously activated relays stay active.
 
   ## Examples
 
