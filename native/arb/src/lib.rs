@@ -20,9 +20,6 @@ mod atoms {
         atom unsafe_read;
         atom bad_device;
         atom usb;
-
-        //atom __true__ = "true";
-        //atom __false__ = "false";
     }
 }
 
@@ -42,7 +39,7 @@ fn arb_error_to_term<'a>(env: NifEnv<'a>, err: arb::Error) -> NifTerm<'a> {
         Error::VerificationFailed => atoms::verification_failed().encode(env),
         Error::UnsafeRead => atoms::unsafe_read().encode(env),
         Error::BadDevice => atoms::bad_device().encode(env),
-        Error::Usb(ref libusb_error) => {
+        Error::Usb(libusb_error) => {
             (atoms::usb(), format!("{}", libusb_error).encode(env)).encode(env)
         }
     };
