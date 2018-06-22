@@ -4,7 +4,7 @@ defmodule Arb.MixProject do
   def project do
     [
       app: :arb,
-      version: "0.2.1",
+      version: "0.2.2",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       compilers: [:rustler] ++ Mix.compilers(),
@@ -28,7 +28,7 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.16.0"},
+      {:rustler, "~> 0.17.0"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
   end

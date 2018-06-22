@@ -7,7 +7,8 @@ extern crate rustler_codegen;
 
 extern crate arb;
 
-use rustler::{NifEncoder, NifEnv, NifResult, NifTerm, types::NifListIterator};
+use rustler::types::ListIterator;
+use rustler::{Encoder, Env, NifResult, Term};
 
 mod atoms {
     rustler_atoms! {
@@ -30,7 +31,7 @@ struct Options {
     pub verify: bool,
 }
 
-fn arb_error_to_term<'a>(env: NifEnv<'a>, err: arb::Error) -> NifTerm<'a> {
+fn arb_error_to_term<'a>(env: Env<'a>, err: arb::Error) -> Term<'a> {
     use arb::Error;
 
     let error = match err {
@@ -47,8 +48,8 @@ fn arb_error_to_term<'a>(env: NifEnv<'a>, err: arb::Error) -> NifTerm<'a> {
     (atoms::error(), error).encode(env)
 }
 
-fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
-    let list_iterator: NifListIterator = args[0].decode()?;
+fn activate<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
+    let list_iterator: ListIterator = args[0].decode()?;
     let result: NifResult<Vec<u8>> = list_iterator
         .map(|x| x.decode::<u8>())
         .collect::<NifResult<Vec<u8>>>();
@@ -67,7 +68,7 @@ fn activate<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>>
     }
 }
 
-fn get_active<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+fn get_active<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     let port: Option<u8> = args[0].decode()?;
 
     let result = match arb::get_status(port) {
@@ -88,7 +89,7 @@ fn get_active<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a
     Ok((atoms::ok(), active_relays).encode(env))
 }
 
-fn reset<'a>(env: NifEnv<'a>, args: &[NifTerm<'a>]) -> NifResult<NifTerm<'a>> {
+fn reset<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
     let port: Option<u8> = args[0].decode()?;
 
     match arb::reset(port) {
