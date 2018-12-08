@@ -2,6 +2,7 @@
 name = "arb"
 version = "0.1.0"
 authors = ["Adrian Kumpf <adrian.kumpf@posteo.de>"]
+edition = '2018'
 
 [lib]
 name = "arb"
@@ -9,7 +10,7 @@ path = "src/lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
-rustler = "0.18"
-rustler_codegen = "0.18"
-lazy_static = "1.0.0"
+rustler = "0.18.0"
+rustler_codegen = "0.18.0"
+lazy_static = "1.2.0"
 arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = 'v0.2.2' }

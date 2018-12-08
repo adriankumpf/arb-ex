@@ -5,7 +5,7 @@ extern crate rustler;
 #[macro_use]
 extern crate rustler_codegen;
 
-extern crate arb;
+use arb;
 
 use rustler::types::ListIterator;
 use rustler::{Encoder, Env, NifResult, Term};
@@ -49,7 +49,7 @@ fn arb_error_to_term<'a>(env: Env<'a>, err: arb::Error) -> Term<'a> {
 }
 
 fn activate<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
-    let list_iterator: ListIterator = args[0].decode()?;
+    let list_iterator: ListIterator<'_> = args[0].decode()?;
     let result: NifResult<Vec<u8>> = list_iterator
         .map(|x| x.decode::<u8>())
         .collect::<NifResult<Vec<u8>>>();
