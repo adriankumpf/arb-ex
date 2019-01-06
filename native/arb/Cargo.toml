@@ -13,4 +13,4 @@ crate-type = ["dylib"]
 rustler = "0.18.0"
 rustler_codegen = "0.18.0"
 lazy_static = "1.2.0"
-arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = 'v0.2.2' }
+arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = 'v0.3.0' }

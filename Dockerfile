@@ -1,7 +1,7 @@
 FROM erlang:20.3
 
-ENV ELIXIR_VERSION="v1.6.5" \
-    RUST_VERSION="1.26.0" \
+ENV ELIXIR_VERSION="v1.7.4" \
+    RUST_VERSION="1.31.0" \
     LANG="C.UTF-8" \
     MIX_ENV="prod" \
     HOME=/opt/app
