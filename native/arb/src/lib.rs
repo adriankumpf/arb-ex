@@ -21,6 +21,7 @@ mod atoms {
         atom unsafe_read;
         atom bad_device;
         atom usb;
+        atom io;
     }
 }
 
@@ -40,9 +41,8 @@ fn arb_error_to_term<'a>(env: Env<'a>, err: arb::Error) -> Term<'a> {
         Error::VerificationFailed => atoms::verification_failed().encode(env),
         Error::UnsafeRead => atoms::unsafe_read().encode(env),
         Error::BadDevice => atoms::bad_device().encode(env),
-        Error::Usb(libusb_error) => {
-            (atoms::usb(), format!("{}", libusb_error).encode(env)).encode(env)
-        }
+        Error::Usb(usb_error) => (atoms::usb(), format!("{}", usb_error).encode(env)).encode(env),
+        Error::IO(io_error) => (atoms::io(), format!("{}", io_error).encode(env)).encode(env),
     };
 
     (atoms::error(), error).encode(env)
