@@ -1,12 +1,11 @@
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate rustler;
 #[macro_use]
 extern crate rustler_codegen;
 
 use arb;
 
+use rustler::schedule::SchedulerFlags;
 use rustler::types::ListIterator;
 use rustler::{Encoder, Env, NifResult, Term};
 
@@ -101,9 +100,9 @@ fn reset<'a>(env: Env<'a>, args: &[Term<'a>]) -> NifResult<Term<'a>> {
 rustler_export_nifs! {
     "Elixir.Arb.Native",
     [
-        ("activate", 2, activate),
-        ("get_active", 1, get_active),
-        ("reset", 1, reset)
+        ("activate", 2, activate, SchedulerFlags::DirtyIo),
+        ("get_active", 1, get_active, SchedulerFlags::DirtyIo),
+        ("reset", 1, reset, SchedulerFlags::DirtyIo)
     ],
     None
 }
