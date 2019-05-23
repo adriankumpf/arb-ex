@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.4.1] - 2019-05-23
+
+### Changed
+
+- Update dependencies
+
 ## [0.4.0] - 2019-01-06
 
 ### Added
@@ -56,7 +62,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/adriankumpf/arb-ex/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/adriankumpf/arb-ex/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/adriankumpf/arb-ex/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/adriankumpf/arb-ex/compare/v0.2.2...v0.2.3
