@@ -4,7 +4,7 @@ defmodule Arb.MixProject do
   def project do
     [
       app: :arb,
-      version: "0.4.1",
+      version: "0.5.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       compilers: [:rustler] ++ Mix.compilers(),
@@ -28,7 +28,7 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.18"},
+      {:rustler, "~> 0.21"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
   end
@@ -44,8 +44,9 @@ defmodule Arb.MixProject do
       files: [
         "lib",
         "priv",
-        "native/arb/src",
+        "native/arb/.cargo/config",
         "native/arb/Cargo*",
+        "native/arb/src",
         "mix.exs",
         "README*",
         "LICENSE*"
