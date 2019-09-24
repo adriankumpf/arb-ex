@@ -10,6 +10,6 @@ path = "src/lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
-rustler = "0.20.0"
-rustler_codegen = "0.20.0"
+rustler = "0.21.0"
+rustler_codegen = "0.21.0"
 arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = 'v0.4.0' }

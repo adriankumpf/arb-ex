@@ -1,39 +1,14 @@
-FROM erlang:21.3
+FROM elixir:1.9
 
-ENV ELIXIR_VERSION="v1.8.1" \
-    RUST_VERSION="1.34.2" \
-    LANG="C.UTF-8" \
-    MIX_ENV="prod" \
-    HOME=/opt/app
+ENV RUST_VERSION="1.37.0" \
+    MIX_ENV="prod"
 
-WORKDIR $HOME
+WORKDIR /opt/app
 
-RUN apt-get update && \
-    apt-get install \
-       ca-certificates \
-       curl \
-       gcc \
-       libc6-dev \
+RUN apt-get update && apt-get install -qqy --no-install-recommends \
        libusb-1.0-0-dev \
-       psmisc \
-       -qqy \
-       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Elixir
-RUN set -xe \
-    && ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/${ELIXIR_VERSION}.tar.gz" \
-    && curl -fSL -o elixir-src.tar.gz $ELIXIR_DOWNLOAD_URL \
-    && mkdir -p /usr/local/src/elixir \
-    && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
-    && rm elixir-src.tar.gz \
-    && cd /usr/local/src/elixir \
-    && make install clean
-
-# Install Hex
-RUN mix do local.hex --force, local.rebar --force
-
-# Install Rust
 RUN RUST_ARCHIVE="rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz" && \
     RUST_DOWNLOAD_URL="https://static.rust-lang.org/dist/$RUST_ARCHIVE" && \
     mkdir -p /rust \
@@ -44,8 +19,13 @@ RUN RUST_ARCHIVE="rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz" && \
     && rm $RUST_ARCHIVE \
     && ./install.sh
 
-COPY . .
+COPY lib lib
+COPY native native
+COPY mix.exs .
+COPY mix.lock .
 
-RUN mix do deps.get, deps.compile, compile.rustler
+RUN mix do \
+    local.hex --force, local.rebar --force, \
+    deps.get, deps.compile, compile.rustler
 
 CMD ["iex", "-S", "mix"]
