@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2019-12-20
+
+### Changed
+
+- Bump abacom-relay-board (arb) to 0.5.0
+
 ## [0.5.0] - 2019-09-24
 
 ### Added
@@ -68,7 +74,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/adriankumpf/arb-ex/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adriankumpf/arb-ex/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/adriankumpf/arb-ex/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/adriankumpf/arb-ex/compare/v0.3.0...v0.4.0
