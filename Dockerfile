@@ -1,6 +1,6 @@
 FROM elixir:1.9
 
-ENV RUST_VERSION="1.37.0" \
+ENV RUST_VERSION="1.40.0" \
     MIX_ENV="prod"
 
 WORKDIR /opt/app
