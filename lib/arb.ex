@@ -25,7 +25,7 @@ defmodule Arb do
       :ok
 
   """
-  @spec activate(list(integer), Options.t()) :: :ok | {:error, atom}
+  @spec activate(list(integer), Keyword.t()) :: :ok | {:error, atom}
   def activate(ids, opts \\ [])
   def activate(ids, opts) when is_list(ids), do: Native.activate(ids, struct(Options, opts))
   def activate(_ids, _opts), do: {:error, :invalid_args}

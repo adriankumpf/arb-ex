@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.7.0-rc.0] - 2021-03-19
+
+### Changed
+
+- Upgrade rustler to 0.22.0-rc.0
+- Bump abacom-relay-board (arb) to 0.5.1
+
 ## [0.6.0] - 2019-12-20
 
 ### Changed
@@ -74,7 +81,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.7.0-rc.0...HEAD
+[0.7.0-rc.0]: https://github.com/adriankumpf/arb-ex/compare/v0.6.0...v0.7.0-rc.0
 [0.6.0]: https://github.com/adriankumpf/arb-ex/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adriankumpf/arb-ex/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/adriankumpf/arb-ex/compare/v0.4.0...v0.4.1
