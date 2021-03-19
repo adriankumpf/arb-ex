@@ -9,13 +9,11 @@ end
 defmodule Arb.Native do
   @moduledoc false
 
-  use Rustler, otp_app: :arb, crate: "arb"
+  use Rustler,
+    otp_app: :arb,
+    crate: :arb
 
-  def activate(_ids, _opts), do: error()
-
-  def get_active(_port), do: error()
-
-  def reset(_port), do: error()
-
-  defp error, do: :erlang.nif_error(:nif_not_loaded)
+  def activate(_ids, _opts), do: :erlang.nif_error(:nif_not_loaded)
+  def get_active(_port), do: :erlang.nif_error(:nif_not_loaded)
+  def reset(_port), do: :erlang.nif_error(:nif_not_loaded)
 end
