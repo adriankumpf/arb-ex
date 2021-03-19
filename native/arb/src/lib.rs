@@ -43,7 +43,7 @@ struct Options {
     verify: bool,
 }
 
-#[rustler::nif(schedule = "DirtyCpu", name = "__activate__")]
+#[rustler::nif(schedule = "DirtyIo", name = "__activate__")]
 fn activate(relays: Vec<u8>, options: Options) -> Result<(), Reason> {
     let relays = relays
         .into_iter()
@@ -53,7 +53,7 @@ fn activate(relays: Vec<u8>, options: Options) -> Result<(), Reason> {
     Ok(arb::set_status(relays, options.verify, options.port)?)
 }
 
-#[rustler::nif(schedule = "DirtyCpu", name = "__get_active__")]
+#[rustler::nif(schedule = "DirtyIo", name = "__get_active__")]
 fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
     let result = arb::get_status(port)?;
 
@@ -70,7 +70,7 @@ fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
     Ok(active_relays)
 }
 
-#[rustler::nif(schedule = "DirtyCpu", name = "__reset__")]
+#[rustler::nif(schedule = "DirtyIo", name = "__reset__")]
 fn reset(port: Option<u8>) -> Result<(), Reason> {
     Ok(arb::reset(port)?)
 }
