@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Breaking: `Arb.get_active/1` expects a keyword list with the `:port`
+
+  ```elixir
+  # Before
+  Arb.get_active(port)
+
+  # After
+  Arb.get_active(port: port)
+  ```
+
+- Breaking: `Arb.reset/1` expects a keyword list with the `:port`
+
+  ```elixir
+  # Before
+  Arb.reset(port)
+
+  # After
+  Arb.reset(port: port)
+  ```
+
 ## [0.7.0-rc.2] - 2021-03-19
 
 ### Changed

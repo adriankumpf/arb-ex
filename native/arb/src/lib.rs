@@ -1,4 +1,4 @@
-use rustler::{Atom, NifStruct, NifTuple, NifUntaggedEnum};
+use rustler::{Atom, NifTuple, NifUntaggedEnum};
 
 #[derive(NifTuple, Debug)]
 struct ErrorMessage(Atom, String);
@@ -36,21 +36,14 @@ impl From<arb::Error> for Reason {
     }
 }
 
-#[derive(NifStruct)]
-#[module = "Arb.Native.Options"]
-struct Options {
-    port: Option<u8>,
-    verify: bool,
-}
-
 #[rustler::nif(schedule = "DirtyIo", name = "__activate__")]
-fn activate(relays: Vec<u8>, options: Options) -> Result<(), Reason> {
+fn activate(relays: Vec<u8>, verify: bool, port: Option<u8>) -> Result<(), Reason> {
     let relays = relays
         .into_iter()
         .filter(|&r| r != 0)
         .fold(0, |acc, r| acc | 1 << (r - 1));
 
-    Ok(arb::set_status(relays, options.verify, options.port)?)
+    Ok(arb::set_status(relays, verify, port)?)
 }
 
 #[rustler::nif(schedule = "DirtyIo", name = "__get_active__")]
@@ -75,4 +68,4 @@ fn reset(port: Option<u8>) -> Result<(), Reason> {
     Ok(arb::reset(port)?)
 }
 
-rustler::init!("Elixir.Arb.Native", [activate, get_active, reset]);
+rustler::init!("Elixir.Arb", [activate, get_active, reset]);

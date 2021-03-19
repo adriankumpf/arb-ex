@@ -3,21 +3,39 @@ defmodule Arb do
   A NIF for controlling the ABACOM CH341A relay board.
   """
 
-  alias Arb.{Native, Native.Options}
+  use Rustler,
+    otp_app: :arb,
+    crate: :arb
+
+  @port_definition [
+    type: :non_neg_integer,
+    doc: """
+    The USB port to be used. Only necessary if multiple relay boards are connected.
+    """,
+    required: false
+  ]
+
+  @verify_definition [
+    type: :boolean,
+    doc: """
+    Configures whether the activation should be verified.
+    """,
+    default: false
+  ]
+
+  @typedoc """
+  The relays are labeled from 1 to 8 according to the 
+  [data sheet](http://www.abacom-online.de/div/ABACOM_USB_LRB.pdf).
+  """
+  @type relay_id :: 1..8
 
   @doc """
-  Given a list of ids turns on the corresponding relays. An empty list turns off all relays.
-
-  The relays are labeled from 1 to 8 according to the
-  [data sheet](http://www.abacom-online.de/div/ABACOM_USB_LRB.pdf).
+  Activates the relays that correspond to the given a list of IDs. An empty
+  list deactivates all relays.
 
   ## Options
 
-  The accepted options are:
-
-    * `:verify` – configures whether the activation should be verfied (default: true)
-    * `:port` – configures which USB port to use. Only necessary if multiple relay boards are
-    connected (default: nil)
+  #{NimbleOptions.docs(port: @port_definition, verify: @verify_definition)}
 
   ## Examples
 
@@ -25,13 +43,18 @@ defmodule Arb do
       :ok
 
   """
-  @spec activate(list(integer), Keyword.t()) :: :ok | {:error, atom}
-  def activate(ids, opts \\ [])
-  def activate(ids, opts) when is_list(ids), do: Native.activate(ids, struct(Options, opts))
-  def activate(_ids, _opts), do: {:error, :invalid_args}
+  @spec activate([relay_id], Keyword.t()) :: :ok | {:error, term}
+  def activate(ids, opts \\ []) when is_list(ids) do
+    opts = NimbleOptions.validate!(opts, port: @port_definition, verify: @verify_definition)
+    __activate__(ids, opts[:verify], opts[:port]) |> to_ok()
+  end
 
   @doc """
   Returns the ids of active relays.
+
+  ## Options
+
+  #{NimbleOptions.docs(port: @port_definition)}
 
   ## Examples
 
@@ -39,20 +62,25 @@ defmodule Arb do
       {:ok, [1, 3, 6]}
 
   """
-  @spec get_active(integer) :: {:ok, list(integer)} | {:error, atom}
-  def get_active(port \\ nil)
-  def get_active(port) when is_integer(port) or is_nil(port), do: Native.get_active(port)
-  def get_active(_port), do: {:error, :invalid_args}
+  @spec get_active(Keyword.t()) :: {:ok, [relay_id]} | {:error, term}
+  def get_active(opts \\ []) do
+    opts = NimbleOptions.validate!(opts, port: @port_definition)
+    __get_active__(opts[:port])
+  end
 
   @doc """
   Resets the relay board.
 
-  If, under some circumstances, relay board operations fail due to a USB error
+  If, under some circumstances relay board operations fail due to a USB error
   e.g. `{:error, {:usb, "Input/Output Error"}}`, this function may resolve
   the issue by reseting the relay board. The effect is similar to replugging
   the device.
 
   **Note:** Previously activated relays stay active.
+
+  ## Options
+
+  #{NimbleOptions.docs(port: @port_definition)}
 
   ## Examples
 
@@ -60,8 +88,16 @@ defmodule Arb do
       :ok
 
   """
-  @spec reset(integer) :: {:ok, list(integer)} | {:error, atom}
-  def reset(port \\ nil)
-  def reset(port) when is_integer(port) or is_nil(port), do: Native.reset(port)
-  def reset(_port), do: {:error, :invalid_args}
+  @spec reset(Keyword.t()) :: {:ok, [relay_id]} | {:error, term}
+  def reset(opts \\ []) do
+    opts = NimbleOptions.validate!(opts, port: @port_definition)
+    __reset__(opts[:port]) |> to_ok()
+  end
+
+  defp __activate__(_ids, _verify, _port), do: :erlang.nif_error(:nif_not_loaded)
+  defp __get_active__(_port), do: :erlang.nif_error(:nif_not_loaded)
+  defp __reset__(_port), do: :erlang.nif_error(:nif_not_loaded)
+
+  defp to_ok({:ok, {}}), do: :ok
+  defp to_ok(other), do: other
 end
