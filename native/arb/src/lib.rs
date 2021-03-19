@@ -1,30 +1,37 @@
-use arb;
-
 use rustler::{Atom, NifStruct, NifTuple, NifUntaggedEnum};
 
 #[derive(NifTuple, Debug)]
-pub struct ErrorTuple(Atom, String);
+struct ErrorMessage(Atom, String);
 
 #[derive(NifUntaggedEnum, Debug)]
-enum ArbError {
-    Plain(Atom),
-    Extended(ErrorTuple),
+enum Reason {
+    Atom(Atom),
+    Tuple(ErrorMessage),
 }
 
-impl From<arb::Error> for ArbError {
+impl Reason {
+    fn new(reason: Atom) -> Self {
+        Self::Atom(reason)
+    }
+    fn from_error(reason: Atom, error: impl std::error::Error) -> Self {
+        Self::Tuple(ErrorMessage(reason, format!("{}", error)))
+    }
+}
+
+impl From<arb::Error> for Reason {
     fn from(err: arb::Error) -> Self {
-        mod reason {
+        mod atom {
             rustler::atoms! { not_found, multiple_found, verification_failed, unsafe_read, bad_device, usb, io, }
         }
 
         match err {
-            arb::Error::NotFound => ArbError::Plain(reason::not_found()),
-            arb::Error::MultipleFound => ArbError::Plain(reason::multiple_found()),
-            arb::Error::VerificationFailed => ArbError::Plain(reason::verification_failed()),
-            arb::Error::UnsafeRead => ArbError::Plain(reason::unsafe_read()),
-            arb::Error::BadDevice => ArbError::Plain(reason::bad_device()),
-            arb::Error::Usb(e) => ArbError::Extended(ErrorTuple(reason::usb(), format!("{}", e))),
-            arb::Error::IO(e) => ArbError::Extended(ErrorTuple(reason::io(), format!("{}", e))),
+            arb::Error::NotFound => Reason::new(atom::not_found()),
+            arb::Error::MultipleFound => Reason::new(atom::multiple_found()),
+            arb::Error::VerificationFailed => Reason::new(atom::verification_failed()),
+            arb::Error::UnsafeRead => Reason::new(atom::unsafe_read()),
+            arb::Error::BadDevice => Reason::new(atom::bad_device()),
+            arb::Error::Usb(e) => Reason::from_error(atom::usb(), e),
+            arb::Error::IO(e) => Reason::from_error(atom::io(), e),
         }
     }
 }
@@ -36,8 +43,8 @@ struct Options {
     verify: bool,
 }
 
-#[rustler::nif(schedule = "DirtyCpu")]
-fn __activate__(relays: Vec<u8>, options: Options) -> Result<(), ArbError> {
+#[rustler::nif(schedule = "DirtyCpu", name = "__activate__")]
+fn activate(relays: Vec<u8>, options: Options) -> Result<(), Reason> {
     let relays = relays
         .into_iter()
         .filter(|&r| r != 0)
@@ -46,8 +53,8 @@ fn __activate__(relays: Vec<u8>, options: Options) -> Result<(), ArbError> {
     Ok(arb::set_status(relays, options.verify, options.port)?)
 }
 
-#[rustler::nif(schedule = "DirtyCpu")]
-fn __get_active__(port: Option<u8>) -> Result<Vec<u8>, ArbError> {
+#[rustler::nif(schedule = "DirtyCpu", name = "__get_active__")]
+fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
     let result = arb::get_status(port)?;
 
     let active_relays = (0..8)
@@ -63,12 +70,9 @@ fn __get_active__(port: Option<u8>) -> Result<Vec<u8>, ArbError> {
     Ok(active_relays)
 }
 
-#[rustler::nif(schedule = "DirtyCpu")]
-fn __reset__(port: Option<u8>) -> Result<(), ArbError> {
+#[rustler::nif(schedule = "DirtyCpu", name = "__reset__")]
+fn reset(port: Option<u8>) -> Result<(), Reason> {
     Ok(arb::reset(port)?)
 }
 
-rustler::init!(
-    "Elixir.Arb.Native",
-    [__activate__, __get_active__, __reset__]
-);
+rustler::init!("Elixir.Arb.Native", [activate, get_active, reset]);
