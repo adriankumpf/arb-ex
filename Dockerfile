@@ -1,31 +1,25 @@
-FROM elixir:1.9
+FROM elixir:1.11
 
-ENV RUST_VERSION="1.40.0" \
-    MIX_ENV="prod"
+ENV MIX_ENV=prod \
+    RUST_VERSION="1.50.0" \
+    PATH=/root/.cargo/bin:$PATH
+
+RUN curl https://sh.rustup.rs -sSf | \
+    sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
+
+RUN apt-get update && apt-get install -qqy --no-install-recommends \
+       libusb-1.0-0-dev
+
+RUN mix do local.hex --force, \
+           local.rebar --force
 
 WORKDIR /opt/app
 
-RUN apt-get update && apt-get install -qqy --no-install-recommends \
-       libusb-1.0-0-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN RUST_ARCHIVE="rust-$RUST_VERSION-x86_64-unknown-linux-gnu.tar.gz" && \
-    RUST_DOWNLOAD_URL="https://static.rust-lang.org/dist/$RUST_ARCHIVE" && \
-    mkdir -p /rust \
-    && cd /rust \
-    && curl -fsOSL $RUST_DOWNLOAD_URL \
-    && curl -s $RUST_DOWNLOAD_URL.sha256 | sha256sum -c - \
-    && tar -C /rust -xzf $RUST_ARCHIVE --strip-components=1 \
-    && rm $RUST_ARCHIVE \
-    && ./install.sh
+COPY mix.exs mix.lock .
+RUN mix do deps.get --only $MIX_ENV, deps.compile
 
 COPY lib lib
 COPY native native
-COPY mix.exs .
-COPY mix.lock .
-
-RUN mix do \
-    local.hex --force, local.rebar --force, \
-    deps.get, deps.compile, compile.rustler
+RUN mix compile
 
 CMD ["iex", "-S", "mix"]
