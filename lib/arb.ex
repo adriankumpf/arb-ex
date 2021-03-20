@@ -9,18 +9,13 @@ defmodule Arb do
 
   @port_definition [
     type: :non_neg_integer,
-    doc: """
-    The USB port to be used. Only necessary if multiple relay boards are connected.
-    """,
-    required: false
+    doc: "The USB port to be used. Only necessary if multiple relay boards are connected."
   ]
 
   @verify_definition [
     type: :boolean,
-    doc: """
-    Configures whether the activation should be verified.
-    """,
-    default: false
+    doc: "Configures whether the activation should be verified.",
+    default: true
   ]
 
   @typedoc """
