@@ -14,14 +14,14 @@ impl Reason {
         Self::Atom(reason)
     }
     fn from_error(reason: Atom, error: impl std::error::Error) -> Self {
-        Self::Tuple(ErrorMessage(reason, format!("{}", error)))
+        Self::Tuple(ErrorMessage(reason, error.to_string()))
     }
 }
 
 impl From<arb::Error> for Reason {
     fn from(err: arb::Error) -> Self {
         mod atom {
-            rustler::atoms! { not_found, multiple_found, verification_failed, unsafe_read, bad_device, usb, io, }
+            rustler::atoms! { not_found, multiple_found, verification_failed, unsafe_read, bad_device, usb, io }
         }
 
         match err {
@@ -40,7 +40,7 @@ impl From<arb::Error> for Reason {
 fn activate(relays: Vec<u8>, verify: bool, port: Option<u8>) -> Result<(), Reason> {
     let relays = relays
         .into_iter()
-        .filter(|&r| r != 0)
+        .filter(|r| *r != 0)
         .fold(0, |acc, r| acc | 1 << (r - 1));
 
     Ok(arb::set_status(relays, verify, port)?)
@@ -51,12 +51,9 @@ fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
     let result = arb::get_status(port)?;
 
     let active_relays = (0..8)
-        .filter_map(|m| {
-            if (1 << m) & result != 0 {
-                Some(m + 1)
-            } else {
-                None
-            }
+        .filter_map(|m| match (1 << m) & result != 0 {
+            true => Some(m + 1),
+            false => None,
         })
         .collect();
 
