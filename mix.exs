@@ -4,11 +4,10 @@ defmodule Arb.MixProject do
   def project do
     [
       app: :arb,
-      version: "0.7.0-rc.2",
+      version: "0.7.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
-      compilers: [:rustler] ++ Mix.compilers(),
-      rustler_crates: rustler_crates(),
+      compilers: Mix.compilers(),
       deps: deps(),
       description: description(),
       package: package(),
@@ -17,18 +16,9 @@ defmodule Arb.MixProject do
     ]
   end
 
-  defp rustler_crates do
-    [
-      io: [
-        path: "native/arb",
-        mode: if(Mix.env() == :prod, do: :release, else: :debug)
-      ]
-    ]
-  end
-
   defp deps do
     [
-      {:rustler, "~> 0.22-rc.0"},
+      {:rustler, "~> 0.22"},
       {:nimble_options, "~> 0.3"},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false}
     ]
