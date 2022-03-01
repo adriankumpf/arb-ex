@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2022-03-01
+
+- Update `rustler` to 0.24
+
 ## [0.7.0] - 2021-09-21
 
 ### Changed
@@ -101,7 +105,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.7.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.8.0...HEAD
+[0.7.0]: https://github.com/adriankumpf/arb-ex/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/adriankumpf/arb-ex/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/adriankumpf/arb-ex/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/adriankumpf/arb-ex/compare/v0.4.1...v0.5.0
