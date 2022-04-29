@@ -21,7 +21,7 @@ Add `:arb` to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:arb, "~> 0.7"}
+    {:arb, "~> 0.8"}
   ]
 end
 ```
