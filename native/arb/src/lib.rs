@@ -1,43 +1,53 @@
-use rustler::{Atom, NifTuple, NifUntaggedEnum};
+use rustler::{Atom, NifException, NifTuple, NifUntaggedEnum};
 
 #[derive(NifTuple, Debug)]
-struct ErrorMessage(Atom, String);
+struct ErrorTuple(Atom, String);
 
 #[derive(NifUntaggedEnum, Debug)]
 enum Reason {
     Atom(Atom),
-    Tuple(ErrorMessage),
+    Tuple(ErrorTuple),
 }
 
-impl Reason {
-    fn new(reason: Atom) -> Self {
-        Self::Atom(reason)
+#[derive(NifException, Debug)]
+#[module = "Arb.Error"]
+struct ArbError {
+    reason: Reason,
+}
+
+impl ArbError {
+    pub fn new(reason: Atom) -> Self {
+        Self {
+            reason: Reason::Atom(reason),
+        }
     }
     fn from_error(reason: Atom, error: impl std::error::Error) -> Self {
-        Self::Tuple(ErrorMessage(reason, error.to_string()))
+        Self {
+            reason: Reason::Tuple(ErrorTuple(reason, error.to_string())),
+        }
     }
 }
 
-impl From<arb::Error> for Reason {
+impl From<arb::Error> for ArbError {
     fn from(err: arb::Error) -> Self {
         mod atom {
             rustler::atoms! { not_found, multiple_found, verification_failed, unsafe_read, bad_device, usb, io }
         }
 
         match err {
-            arb::Error::NotFound => Reason::new(atom::not_found()),
-            arb::Error::MultipleFound => Reason::new(atom::multiple_found()),
-            arb::Error::VerificationFailed => Reason::new(atom::verification_failed()),
-            arb::Error::UnsafeRead => Reason::new(atom::unsafe_read()),
-            arb::Error::BadDevice => Reason::new(atom::bad_device()),
-            arb::Error::Usb(e) => Reason::from_error(atom::usb(), e),
-            arb::Error::IO(e) => Reason::from_error(atom::io(), e),
+            arb::Error::NotFound => ArbError::new(atom::not_found()),
+            arb::Error::MultipleFound => ArbError::new(atom::multiple_found()),
+            arb::Error::VerificationFailed => ArbError::new(atom::verification_failed()),
+            arb::Error::UnsafeRead => ArbError::new(atom::unsafe_read()),
+            arb::Error::BadDevice => ArbError::new(atom::bad_device()),
+            arb::Error::Usb(e) => ArbError::from_error(atom::usb(), e),
+            arb::Error::IO(e) => ArbError::from_error(atom::io(), e),
         }
     }
 }
 
 #[rustler::nif(schedule = "DirtyIo", name = "__activate__")]
-fn activate(relays: Vec<u8>, verify: bool, port: Option<u8>) -> Result<(), Reason> {
+fn activate(relays: Vec<u8>, verify: bool, port: Option<u8>) -> Result<(), ArbError> {
     let relays = relays
         .into_iter()
         .filter(|r| *r != 0)
@@ -47,7 +57,7 @@ fn activate(relays: Vec<u8>, verify: bool, port: Option<u8>) -> Result<(), Reaso
 }
 
 #[rustler::nif(schedule = "DirtyIo", name = "__get_active__")]
-fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
+fn get_active(port: Option<u8>) -> Result<Vec<u8>, ArbError> {
     let result = arb::get_status(port)?;
 
     let active_relays = (0..8)
@@ -61,7 +71,7 @@ fn get_active(port: Option<u8>) -> Result<Vec<u8>, Reason> {
 }
 
 #[rustler::nif(schedule = "DirtyIo", name = "__reset__")]
-fn reset(port: Option<u8>) -> Result<(), Reason> {
+fn reset(port: Option<u8>) -> Result<(), ArbError> {
     Ok(arb::reset(port)?)
 }
 

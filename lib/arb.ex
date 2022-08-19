@@ -38,7 +38,7 @@ defmodule Arb do
       :ok
 
   """
-  @spec activate([relay_id], Keyword.t()) :: :ok | {:error, term}
+  @spec activate([relay_id], Keyword.t()) :: :ok | {:error, Arb.Error.t()}
   def activate(ids, opts \\ []) when is_list(ids) do
     opts = NimbleOptions.validate!(opts, port: @port_definition, verify: @verify_definition)
     __activate__(ids, opts[:verify], opts[:port]) |> to_ok()
@@ -57,7 +57,7 @@ defmodule Arb do
       {:ok, [1, 3, 6]}
 
   """
-  @spec get_active(Keyword.t()) :: {:ok, [relay_id]} | {:error, term}
+  @spec get_active(Keyword.t()) :: {:ok, [relay_id]} | {:error, Arb.Error.t()}
   def get_active(opts \\ []) do
     opts = NimbleOptions.validate!(opts, port: @port_definition)
     __get_active__(opts[:port])
@@ -83,7 +83,7 @@ defmodule Arb do
       :ok
 
   """
-  @spec reset(Keyword.t()) :: {:ok, [relay_id]} | {:error, term}
+  @spec reset(Keyword.t()) :: {:ok, [relay_id]} | {:error, Arb.Error.t()}
   def reset(opts \\ []) do
     opts = NimbleOptions.validate!(opts, port: @port_definition)
     __reset__(opts[:port]) |> to_ok()
