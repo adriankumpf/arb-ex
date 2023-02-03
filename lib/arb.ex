@@ -68,7 +68,7 @@ defmodule Arb do
 
   If, under some circumstances relay board operations fail due to a USB error
   e.g. `{:error, {:usb, "Input/Output Error"}}`, this function may resolve
-  the issue by reseting the relay board. The effect is similar to replugging
+  the issue by resetting the relay board. The effect is similar to replugging
   the device.
 
   **Note:** Previously activated relays stay active.
