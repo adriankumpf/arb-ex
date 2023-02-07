@@ -1,0 +1,48 @@
+name: Rust CI
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "native/**"
+  pull_request:
+    paths:
+      - "native/**"
+      - ".github/workflows/rust-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  lint-rust:
+    name: Lint Rust
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest:
+          - native/arb/Cargo.toml
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - uses: actions/cache@v3.2.4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            native/arb/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.job.target }}
+          components: rustfmt, clippy
+
+      - name: Run rustfmt in check mode
+        run: cargo fmt --manifest-path=${{ matrix.manifest }} --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --manifest-path=${{ matrix.manifest }} -- -Dwarnings
