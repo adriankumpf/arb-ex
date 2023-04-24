@@ -19,12 +19,15 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: "1.14.3"
-              otp: "25"
+              elixir: "1.14.4"
+              otp: "26.0"
+          - pair:
+              elixir: "1.14.4"
+              otp: "25.3"
             lint: lint
           - pair:
               elixir: "1.12.3"
-              otp: "24"
+              otp: "24.3"
     steps:
       - uses: actions/checkout@v3
 
@@ -51,6 +54,7 @@ jobs:
         with:
           otp-version: ${{matrix.pair.otp}}
           elixir-version: ${{matrix.pair.elixir}}
+          version-type: "strict"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

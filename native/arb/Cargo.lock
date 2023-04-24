@@ -79,9 +79,9 @@ checksum = "26072860ba924cbfa98ea39c8c19b4dd6a4a25423dbdf219c1eca91aa0cf6964"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.57"
+version = "1.0.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4ec6d5fe0b140acb27c9a0444118cf55bfbb4e0b259739429abb4521dd67c16"
+checksum = "fa1fb82fc0c281dd9671101b66b771ebbe1eaf967b96ac8740dcba4b70005ca8"
 dependencies = [
  "unicode-ident",
 ]
@@ -147,9 +147,9 @@ dependencies = [
 
 [[package]]
 name = "rustler_sys"
-version = "2.2.0"
+version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ff26a42e62d538f82913dd34f60105ecfdffbdb25abdc3c3580b0c622285332"
+checksum = "ae0eb19e2fdf4abc3662441087fc499a58b7550822cc8007e79f15c40157c883"
 dependencies = [
  "regex",
  "unreachable",
