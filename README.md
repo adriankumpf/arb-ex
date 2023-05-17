@@ -1,6 +1,6 @@
 # arb-ex
 
-[![Docs](https://img.shields.io/badge/hex-docs-green.svg?style=flat)](https://hexdocs.pm/arb_ex)
+[![Docs](https://img.shields.io/badge/hex-docs-green.svg?style=flat)](https://hexdocs.pm/arb)
 [![Hex.pm](https://img.shields.io/hexpm/v/arb?color=%23714a94)](http://hex.pm/packages/arb)
 
 An Elixir NIF for controlling the ABACOM CH341A relay board
