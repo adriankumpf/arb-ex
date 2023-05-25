@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2023-05-25
+
+- Add support for OTP 26
+- Require Elixir 1.12
+
 ## [0.9.0] - 2022-08-19
 
 ### Breaking changes
@@ -115,7 +120,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.9.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/adriankumpf/arb-ex/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/adriankumpf/arb-ex/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/adriankumpf/arb-ex/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/adriankumpf/arb-ex/compare/v0.7.0...v0.8.0
