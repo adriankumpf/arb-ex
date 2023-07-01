@@ -11,5 +11,5 @@ crate-type = ["dylib"]
 
 [dependencies]
 rustler = "0.29.0"
-rustler_codegen = "0.29.0"
+rustler_codegen = "0.29.1"
 arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = 'v0.5.2' }
