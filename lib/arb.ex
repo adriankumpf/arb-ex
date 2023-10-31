@@ -19,7 +19,7 @@ defmodule Arb do
   ]
 
   @typedoc """
-  The relays are labeled from 1 to 8 according to the 
+  The relays are labeled from 1 to 8 according to the
   [data sheet](http://www.abacom-online.de/div/ABACOM_USB_LRB.pdf).
   """
   @type relay_id :: 1..8
