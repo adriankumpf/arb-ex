@@ -5,7 +5,7 @@ defmodule Arb.MixProject do
     [
       app: :arb,
       version: "0.10.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       compilers: Mix.compilers(),
       deps: deps(),

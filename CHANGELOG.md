@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Require Elixir 1.13
+
 ## [0.10.0] - 2023-05-25
 
 - Add support for OTP 26
