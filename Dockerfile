@@ -1,7 +1,7 @@
 FROM elixir:1.16
 
 ENV MIX_ENV=prod \
-    RUST_VERSION="1.75.0" \
+    RUST_VERSION="1.76.0" \
     PATH=/root/.cargo/bin:$PATH
 
 RUN curl https://sh.rustup.rs -sSf | \
