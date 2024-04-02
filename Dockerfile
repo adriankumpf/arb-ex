@@ -1,14 +1,15 @@
-FROM elixir:1.16
+FROM hexpm/elixir:1.16.2-erlang-26.2.2-debian-bookworm-20240130
 
 ENV MIX_ENV=prod \
-    RUST_VERSION="1.76.0" \
+    RUST_VERSION="1.77.1" \
     PATH=/root/.cargo/bin:$PATH
 
-RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
-
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
-    libusb-1.0-0-dev
+    libusb-1.0-0-dev curl build-essential
+
+RUN curl https://sh.rustup.rs -sSf | \
+    sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION && \
+    cargo --version
 
 RUN mix do local.hex --force, \
     local.rebar --force
