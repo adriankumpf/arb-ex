@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.12.0] - 2024-06-01
+
+- Bump dependencies
+
 ## [0.11.0] - 2024-03-02
 
 - Require Elixir 1.13

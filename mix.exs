@@ -4,7 +4,7 @@ defmodule Arb.MixProject do
   def project do
     [
       app: :arb,
-      version: "0.11.0",
+      version: "0.12.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       compilers: Mix.compilers(),
@@ -35,7 +35,7 @@ defmodule Arb.MixProject do
       files: [
         "lib",
         "priv",
-        "native/arb/.cargo/config",
+        "native/arb/.cargo/config.toml",
         "native/arb/Cargo*",
         "native/arb/src",
         "mix.exs",
