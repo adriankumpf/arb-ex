@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.13.1] - 2024-07-09
+
+- Fix published docs
+
 ## [0.13.0] - 2024-07-09
 
 - Upgrade rustler to 0.34
