@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.13.0] - 2024-07-09
+
+- Upgrade rustler to 0.34
+
 ## [0.12.0] - 2024-06-01
 
 - Bump dependencies
