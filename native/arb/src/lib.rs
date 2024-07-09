@@ -75,4 +75,4 @@ fn reset(port: Option<u8>) -> Result<(), ArbError> {
     Ok(arb::reset(port)?)
 }
 
-rustler::init!("Elixir.Arb", [activate, get_active, reset]);
+rustler::init!("Elixir.Arb");
