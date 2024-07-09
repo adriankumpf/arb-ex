@@ -1,10 +1,13 @@
 defmodule Arb.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/adriankumpf/arb-ex"
+  @version "0.13.0"
+
   def project do
     [
       app: :arb,
-      version: "0.13.0",
+      version: @version,
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       compilers: Mix.compilers(),
@@ -24,13 +27,13 @@ defmodule Arb.MixProject do
     ]
   end
 
-  defp description() do
+  defp description do
     """
     An Elixir NIF for controlling the ABACOM CH341A relay board.
     """
   end
 
-  defp package() do
+  defp package do
     [
       files: [
         "lib",
@@ -50,8 +53,10 @@ defmodule Arb.MixProject do
 
   defp docs do
     [
-      main: "Arb",
-      extras: ["README.md"]
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      extras: ["README.md", "LICENSE"]
     ]
   end
 end

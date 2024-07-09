@@ -7,3 +7,4 @@ _build/
 deps/
 test/
 native/arb/target/
+doc/
