@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.14.0] - 2024-11-03
+
+- Bump dependencies
+
 ## [0.13.1] - 2024-07-09
 
 - Fix published docs
