@@ -1,6 +1,6 @@
-FROM hexpm/elixir:1.17.3-erlang-27.1.2-debian-bookworm-20241016 AS releaser
+FROM hexpm/elixir:1.18.0-erlang-27.2-debian-bookworm-20241202-slim AS releaser
 
-ENV RUST_VERSION="1.82.0" \
+ENV RUST_VERSION="1.83.0" \
     PATH=/root/.cargo/bin:$PATH
 
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
