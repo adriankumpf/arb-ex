@@ -3,6 +3,8 @@ FROM hexpm/elixir:1.18.2-erlang-27.2-debian-bookworm-20250113-slim AS releaser
 ENV RUST_VERSION="1.84.1" \
     PATH=/root/.cargo/bin:$PATH
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
     libusb-1.0-0-dev curl build-essential
 
@@ -15,11 +17,12 @@ RUN mix do local.hex --force, \
 
 WORKDIR /opt/app
 
-COPY mix.exs mix.lock .
+COPY mix.exs mix.lock ./
 RUN mix do deps.get --only $MIX_ENV, deps.compile
 
 COPY lib lib
 COPY native native
+COPY README.md LICENSE ./
 RUN mix compile
 
 CMD ["iex", "-S", "mix"]
