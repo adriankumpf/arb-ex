@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.15.0] - 2025-01-01
+
+- Bump rustler to 0.36
+
 ## [0.14.1] - 2024-11-03
 
 - Bump rustler
