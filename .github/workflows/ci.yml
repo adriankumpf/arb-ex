@@ -20,7 +20,7 @@ jobs:
         include:
           - pair:
               elixir: "1.18"
-              otp: "27"
+              otp: "28"
             lint: lint
           - pair:
               elixir: "1.13"

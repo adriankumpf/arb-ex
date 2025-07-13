@@ -1,6 +1,6 @@
-FROM hexpm/elixir:1.18.2-erlang-27.2-debian-bookworm-20250113-slim AS releaser
+FROM hexpm/elixir:1.18.4-erlang-28.0.1-debian-bookworm-20250630-slim AS releaser
 
-ENV RUST_VERSION="1.84.1" \
+ENV RUST_VERSION="1.88.0" \
     PATH=/root/.cargo/bin:$PATH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
