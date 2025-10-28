@@ -21,7 +21,7 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.36.0"},
+      {:rustler, "~> 0.37.1"},
       {:nimble_options, "~> 1.0"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
