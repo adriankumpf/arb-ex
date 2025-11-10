@@ -2,13 +2,13 @@ defmodule Arb.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/adriankumpf/arb-ex"
-  @version "0.15.0"
+  @version "0.16.0"
 
   def project do
     [
       app: :arb,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       compilers: Mix.compilers(),
       deps: deps(),
