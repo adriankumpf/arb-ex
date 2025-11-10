@@ -21,7 +21,7 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.36.0"},
+      {:rustler, "~> 0.37.1", runtime: false},
       {:nimble_options, "~> 1.0"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
@@ -38,9 +38,9 @@ defmodule Arb.MixProject do
       files: [
         "lib",
         "priv",
-        "native/arb/.cargo/config.toml",
-        "native/arb/Cargo*",
-        "native/arb/src",
+        "native/arb_native/.cargo/config.toml",
+        "native/arb_native/Cargo*",
+        "native/arb_native/src",
         "mix.exs",
         "README*",
         "LICENSE*"

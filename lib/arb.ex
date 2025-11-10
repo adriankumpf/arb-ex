@@ -5,7 +5,7 @@ defmodule Arb do
 
   use Rustler,
     otp_app: :arb,
-    crate: :arb
+    crate: :arb_native
 
   @port_definition [
     type: :non_neg_integer,

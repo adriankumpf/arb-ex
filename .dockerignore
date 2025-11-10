@@ -5,5 +5,5 @@ Dockerfile
 _build/
 deps/
 test/
-native/arb/target/
+native/arb_native/target/
 doc/
