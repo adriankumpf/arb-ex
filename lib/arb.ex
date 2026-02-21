@@ -40,6 +40,11 @@ defmodule Arb do
   """
   @spec activate([relay_id], Keyword.t()) :: :ok | {:error, Arb.Error.t()}
   def activate(ids, opts \\ []) when is_list(ids) do
+    Enum.each(ids, fn
+      id when id in 1..8 -> :ok
+      id -> raise ArgumentError, "expected a relay id between 1 and 8, got: #{inspect(id)}"
+    end)
+
     opts = NimbleOptions.validate!(opts, port: @port_definition, verify: @verify_definition)
     __activate__(ids, opts[:verify], opts[:port]) |> to_ok()
   end
@@ -83,7 +88,7 @@ defmodule Arb do
       :ok
 
   """
-  @spec reset(Keyword.t()) :: {:ok, [relay_id]} | {:error, Arb.Error.t()}
+  @spec reset(Keyword.t()) :: :ok | {:error, Arb.Error.t()}
   def reset(opts \\ []) do
     opts = NimbleOptions.validate!(opts, port: @port_definition)
     __reset__(opts[:port]) |> to_ok()
