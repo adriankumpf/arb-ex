@@ -19,7 +19,8 @@ defmodule ArbTest do
     end
 
     test "rejects non-list first argument" do
-      assert_raise FunctionClauseError, fn -> Arb.activate(1) end
+      # Use Function.identity/1 to hide the type from compile-time analysis
+      assert_raise FunctionClauseError, fn -> Arb.activate(Function.identity(1)) end
     end
 
     test "rejects invalid :port" do
