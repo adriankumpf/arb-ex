@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-02-21
+
+- Add relay ID range validation
+- Upgrade arb to v0.7.0
+- Fix Elixir version requirement
+- Bump dependencies
+
 ## [0.16.0] - 2025-11-10
 
 - Bump minimal Elixir version to 1.15
@@ -155,7 +162,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.16.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/adriankumpf/arb-ex/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/adriankumpf/arb-ex/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/adriankumpf/arb-ex/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/adriankumpf/arb-ex/compare/v0.14.0...v0.14.1
