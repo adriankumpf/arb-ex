@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-04-02
+
+- Upgrade arb to v0.7.1
+- Handle unexpected USB transfer length errors
+
 ## [0.17.0] - 2026-02-21
 
 - Add relay ID range validation
@@ -162,7 +167,8 @@
 
 ## [0.1.0] - 2018-03-31
 
-[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.17.0...HEAD
+[unreleased]: https://github.com/adriankumpf/arb-ex/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/adriankumpf/arb-ex/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/adriankumpf/arb-ex/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/adriankumpf/arb-ex/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/adriankumpf/arb-ex/compare/v0.14.1...v0.15.0
