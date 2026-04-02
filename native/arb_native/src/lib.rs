@@ -31,13 +31,24 @@ impl ArbError {
 impl From<arb::Error> for ArbError {
     fn from(err: arb::Error) -> Self {
         mod atom {
-            rustler::atoms! { not_found, multiple_found, verification_failed, bad_device, usb, io }
+            rustler::atoms! {
+                not_found,
+                multiple_found,
+                verification_failed,
+                unexpected_transfer_length,
+                bad_device,
+                usb,
+                io
+            }
         }
 
         match err {
             arb::Error::NotFound => ArbError::new(atom::not_found()),
             arb::Error::MultipleFound => ArbError::new(atom::multiple_found()),
             arb::Error::VerificationFailed => ArbError::new(atom::verification_failed()),
+            err @ arb::Error::UnexpectedTransferLength { .. } => {
+                ArbError::from_error(atom::unexpected_transfer_length(), err)
+            }
             arb::Error::BadDevice => ArbError::new(atom::bad_device()),
             arb::Error::Usb(e) => ArbError::from_error(atom::usb(), e),
             arb::Error::IO(e) => ArbError::from_error(atom::io(), e),

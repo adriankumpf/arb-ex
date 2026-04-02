@@ -8,6 +8,7 @@ defmodule Arb.Error do
           :not_found
           | :multiple_found
           | :verification_failed
+          | {:unexpected_transfer_length, String.t()}
           | :bad_device
           | {:io, String.t()}
           | {:usb, String.t()}
@@ -22,6 +23,7 @@ defmodule Arb.Error do
       :not_found -> "no relay board found"
       :multiple_found -> "multiple relay boards found"
       :verification_failed -> "verification failed"
+      {:unexpected_transfer_length, message} -> message
       :bad_device -> "Usb device malfunction"
       {:io, message} -> "I/O operation failed: #{message}"
       {:usb, message} -> "libusb error: #{message}"

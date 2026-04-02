@@ -5,6 +5,8 @@ defmodule Arb.ErrorTest do
     {:not_found, "no relay board found"},
     {:multiple_found, "multiple relay boards found"},
     {:verification_failed, "verification failed"},
+    {{:unexpected_transfer_length, "unexpected usb transfer length: expected 8 bytes, got 0"},
+     "unexpected usb transfer length: expected 8 bytes, got 0"},
     {:bad_device, "Usb device malfunction"},
     {{:io, "broken pipe"}, "I/O operation failed: broken pipe"},
     {{:usb, "Input/Output Error"}, "libusb error: Input/Output Error"}
