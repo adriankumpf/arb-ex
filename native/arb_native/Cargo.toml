@@ -11,4 +11,7 @@ crate-type = ["dylib"]
 
 [dependencies]
 rustler = { version = "0.38.0", features = ["nif_version_2_16"] }
-arb = { git = "https://github.com/adriankumpf/abacom-relay-board", tag = "v0.7.1" }
+# Pinned to a revision, not a tag: 0.8.0 is deliberately untagged until this
+# branch and a downstream deployment have validated it. Swap for `tag = "v0.8.0"`
+# once it is cut.
+arb = { git = "https://github.com/adriankumpf/abacom-relay-board", rev = "6a9d27f3d041647d48fadc6c91738fa5305de185" }

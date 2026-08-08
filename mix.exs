@@ -2,7 +2,7 @@ defmodule Arb.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/adriankumpf/arb-ex"
-  @version "0.19.0"
+  @version "0.20.0-rc.0"
 
   def project do
     [
@@ -43,6 +43,7 @@ defmodule Arb.MixProject do
         "native/arb_native/src",
         "mix.exs",
         "README*",
+        "CHANGELOG*",
         "LICENSE*"
       ],
       maintainers: ["Adrian Kumpf"],
@@ -56,7 +57,7 @@ defmodule Arb.MixProject do
       main: "readme",
       source_url: @source_url,
       source_ref: "v#{@version}",
-      extras: ["README.md", "LICENSE"]
+      extras: ["README.md", "CHANGELOG.md", "LICENSE"]
     ]
   end
 end

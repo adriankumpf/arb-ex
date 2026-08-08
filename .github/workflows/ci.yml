@@ -2,7 +2,11 @@ name: CI
 
 on:
   pull_request:
+  # Unfiltered, this ran the matrix a second time for every push to a branch
+  # already covered by `pull_request`.
   push:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
@@ -93,4 +97,7 @@ jobs:
       - run: mix compile --warnings-as-errors
         if: ${{ matrix.lint }}
 
-      - run: mix test
+      # Hosted runners are VMs with no USB bus, so `libusb_init` has no usbfs to
+      # find and `Arb.open/0` cannot succeed here. Everything that needs a
+      # context is tagged `:libusb` and runs on a machine that has one.
+      - run: mix test --exclude libusb
