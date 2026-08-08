@@ -7,7 +7,9 @@ edition = '2024'
 [lib]
 name = "arb_native"
 path = "src/lib.rs"
-crate-type = ["dylib"]
+# The BEAM loads a NIF through the C ABI, so this exports `nif_init` and nothing
+# else; `dylib` is the Rust-to-Rust format and exports the whole mangled surface.
+crate-type = ["cdylib"]
 
 [dependencies]
 rustler = { version = "0.38.0", features = ["nif_version_2_16"] }
