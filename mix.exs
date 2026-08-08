@@ -2,7 +2,7 @@ defmodule Arb.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/adriankumpf/arb-ex"
-  @version "0.19.0"
+  @version "0.20.0-rc.0"
 
   def project do
     [
