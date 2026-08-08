@@ -77,6 +77,8 @@ jobs:
             ~/.cargo/git/db/
             native/arb_native/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Clean to rule out incremental build as a source of flakiness
         if: github.run_attempt != '1'
