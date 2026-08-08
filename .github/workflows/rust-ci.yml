@@ -2,7 +2,7 @@ name: Rust CI
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "native/**"
   pull_request:
@@ -10,6 +10,10 @@ on:
       - "native/**"
       - ".github/workflows/rust-ci.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-rust:
