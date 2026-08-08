@@ -4,8 +4,8 @@ version = 4
 
 [[package]]
 name = "arb"
-version = "0.7.1"
-source = "git+https://github.com/adriankumpf/abacom-relay-board?tag=v0.7.1#4f230d0b770a8919b9d36a13f2c28b52d7ad3e54"
+version = "0.8.0"
+source = "git+https://github.com/adriankumpf/abacom-relay-board?rev=0387c267605fbbf64b24fcd28d31a265179ecc33#0387c267605fbbf64b24fcd28d31a265179ecc33"
 dependencies = [
  "rusb",
  "thiserror",

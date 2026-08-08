@@ -1,8 +1,9 @@
 name: Rust CI
 on:
   push:
+    # The default branch is `master`; this said `main`, so pushes never ran it.
     branches:
-      - main
+      - master
     paths:
       - "native/**"
   pull_request:
@@ -25,6 +26,11 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v6
 
+      # `cargo test` links a real binary, unlike `clippy`, so libusb has to be
+      # there rather than merely declared.
+      - name: Install libusb
+        run: sudo apt-get update && sudo apt-get install -y libusb-1.0-0-dev
+
       - uses: actions/cache@v5
         with:
           path: |
@@ -45,4 +51,9 @@ jobs:
         run: cargo fmt --manifest-path=${{ matrix.manifest }} --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --manifest-path=${{ matrix.manifest }} -- -Dwarnings
+        run: cargo clippy --manifest-path=${{ matrix.manifest }} --all-targets -- -Dwarnings
+
+      # The relay-number-to-bit mapping lives here, and the Elixir suite has no
+      # board to catch an off-by-one in it.
+      - name: Run tests
+        run: cargo test --manifest-path=${{ matrix.manifest }}
