@@ -31,6 +31,7 @@ board = Arb.board(usb, port: 3)
 | `Arb.get_active(port: p)`           | `Arb.relays(board)` — **no longer self-tests**                   |
 | `Arb.reset(port: p)`                | `Arb.reset_device(board)`                                        |
 | —                                   | `Arb.open/0`, `Arb.board/2`, `Arb.boards/1`, `Arb.port/1`        |
+| —                                   | `Arb.board_at/2` and `Arb.location/1` — name a board in config   |
 | —                                   | `Arb.self_test/1`, the check `get_active/1` used to run silently |
 | `:bad_device`                       | `:self_test_failed`                                              |
 | `:verification_failed`              | `{:verification_failed, expected, actual}`                       |
@@ -79,14 +80,22 @@ swappable and open a new one after repeated failures. See `Arb.Usb`.
   enumerated board is named by where it sits on the USB tree rather than by port
   number, so it always resolves back to the board it came from. An empty list
   means no board is attached rather than `:not_found`
+- `Arb.location/1` and `Arb.board_at/2`, which make that name something you can
+  keep. A location is a string like `"1-1.3"` — the spelling `lsusb -t` uses —
+  so the board `boards/1` found today can go in a configuration file and be
+  named again after a restart. A port number cannot do that: it is unique only
+  among one hub's ports, so two boards behind two hubs can share it. Parsing is
+  the only thing `board_at/2` can fail at, which is the point — a mistyped
+  location fails at startup rather than resolving to nothing at the first relay
+  switch
 - `Arb.port/1`, and an `Inspect` for `Arb.Board` that renders
-  `#Arb.Board<port 3 (bus 1, path 1.3)>` — enough to tell apart two boards that
-  share a port number
+  `#Arb.Board<port 3 (1-1.3)>` — enough to tell apart two boards that share a
+  port number
 - `Arb.self_test/1`, the read-back check `get_active/1` used to perform on the
   way past. It moves no relay, so it is safe to call on a live board
-- `{:invalid_relay, n}` and `{:unknown, message}` error reasons. The latter is
-  how a variant added to `arb`'s non-exhaustive error type reaches Elixir without
-  the NIF failing to compile
+- `{:invalid_relay, n}`, `{:invalid_location, string}` and `{:unknown, message}`
+  error reasons. The last is how a variant added to `arb`'s non-exhaustive error
+  type reaches Elixir without the NIF failing to compile
 
 ### Fixed
 

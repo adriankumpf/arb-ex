@@ -54,8 +54,16 @@ unambiguously:
 
 ```elixir
 iex> {:ok, boards} = Arb.boards(usb)
-iex> Enum.map(boards, &inspect/1)
-["#Arb.Board<port 3 (bus 1, path 1.3)>", "#Arb.Board<port 4 (bus 1, path 1.4)>"]
+iex> Enum.map(boards, &Arb.location/1)
+["1-1.3", "1-1.4"]
+```
+
+A location is the `lsusb -t` spelling of where a board sits on the USB tree, and
+unlike a port number it never collides — so it is what belongs in configuration
+when a host has more than one board:
+
+```elixir
+iex> {:ok, board} = Arb.board_at(usb, System.fetch_env!("RELAY_BOARD"))
 ```
 
 Migrating from 0.19 — where the three functions took a `:port` option and built a

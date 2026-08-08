@@ -10,6 +10,8 @@ defmodule Arb.ErrorTest do
     {{:verification_failed, [1], []}, "verification failed: expected 1, read back none"},
     {{:verification_failed, [], [4]}, "verification failed: expected none, read back 4"},
     {{:invalid_relay, 9}, "invalid relay: expected a number between 1 and 8, got 9"},
+    {{:invalid_location, "1-"},
+     "invalid board location: expected a bus and port path like `1-1.3`, got `1-`"},
     {{:unexpected_transfer_length, "unexpected usb transfer length: expected 8 bytes, got 0"},
      "unexpected usb transfer length: expected 8 bytes, got 0"},
     {{:usb, "Input/Output Error"}, "libusb error: Input/Output Error"},

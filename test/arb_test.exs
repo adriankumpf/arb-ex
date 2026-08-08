@@ -7,7 +7,7 @@ defmodule ArbTest do
   # ever moved behind the NIF, these would start failing with a decode error
   # instead of quietly passing.
   defp board do
-    %Arb.Board{reference: make_ref(), port: 3, description: "port 3"}
+    %Arb.Board{reference: make_ref(), port: 3, location: "1-1.3"}
   end
 
   describe "set_relays/3" do
@@ -77,13 +77,48 @@ defmodule ArbTest do
     end
   end
 
-  describe "port/1" do
-    test "returns the port a board is named by" do
+  describe "port/1 and location/1" do
+    test "return what the board is named by" do
       assert Arb.port(board()) == 3
+      assert Arb.location(board()) == "1-1.3"
     end
 
-    test "returns nil for a board that names no particular board" do
-      assert Arb.port(%Arb.Board{reference: make_ref(), description: "any board"}) == nil
+    test "return nil for a board that names no particular board" do
+      any = %Arb.Board{reference: make_ref()}
+
+      assert Arb.port(any) == nil
+      assert Arb.location(any) == nil
+    end
+
+    test "a board named by port has a port but no location" do
+      by_port = %Arb.Board{reference: make_ref(), port: 3}
+
+      assert Arb.port(by_port) == 3
+      assert Arb.location(by_port) == nil
+    end
+  end
+
+  describe "inspect/1" do
+    test "renders each way a board can be named" do
+      assert inspect(board()) == "#Arb.Board<port 3 (1-1.3)>"
+      assert inspect(%Arb.Board{reference: make_ref(), port: 3}) == "#Arb.Board<port 3>"
+      assert inspect(%Arb.Board{reference: make_ref()}) == "#Arb.Board<any board>"
+    end
+  end
+
+  describe "board_at/2" do
+    test "rejects a location that is not a string" do
+      for bad <- [3, nil, :"1-1.3"] do
+        assert_raise FunctionClauseError, fn ->
+          Arb.board_at(%Arb.Usb{reference: make_ref()}, Function.identity(bad))
+        end
+      end
+    end
+
+    test "rejects something that is not a context" do
+      assert_raise FunctionClauseError, fn ->
+        Arb.board_at(Function.identity(:usb), "1-1.3")
+      end
     end
   end
 

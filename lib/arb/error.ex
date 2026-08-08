@@ -19,6 +19,7 @@ defmodule Arb.Error do
           | :self_test_failed
           | {:verification_failed, expected :: [Arb.relay_id()], actual :: [Arb.relay_id()]}
           | {:invalid_relay, byte}
+          | {:invalid_location, String.t()}
           | {:unexpected_transfer_length, String.t()}
           | {:usb, String.t()}
           | {:unknown, String.t()}
@@ -47,6 +48,9 @@ defmodule Arb.Error do
 
       {:invalid_relay, relay} ->
         "invalid relay: expected a number between 1 and 8, got #{relay}"
+
+      {:invalid_location, location} ->
+        "invalid board location: expected a bus and port path like `1-1.3`, got `#{location}`"
 
       {:unexpected_transfer_length, message} ->
         message

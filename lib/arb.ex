@@ -78,6 +78,16 @@ defmodule Arb do
   @typedoc "A USB port number."
   @type port_no :: 0..255
 
+  @typedoc """
+  Where a board sits on the USB tree, in the spelling `lsusb -t` uses: the bus,
+  then the hub ports leading down to it — `"1-1.3"` is port 3 of the hub on port
+  1 of bus 1.
+
+  Unlike a port number this never collides, so it is the thing to put in a
+  configuration file when a host has more than one board.
+  """
+  @type location :: String.t()
+
   @doc """
   Initialises libusb.
 
@@ -145,11 +155,53 @@ defmodule Arb do
   def boards(%Usb{} = usb), do: __boards__(usb)
 
   @doc """
+  Names the board at `location`, wherever it is plugged in.
+
+  The way back from `location/1`: a board found by `boards/1` can be written
+  down and named again later, which naming it by port cannot do, since a port
+  number is only unique among one hub's ports.
+
+  Touches no hardware. The only thing that can fail is parsing `location`, which
+  is the point — a mistyped configuration value fails at startup rather than
+  resolving to nothing at the first relay switch.
+
+  ## Examples
+
+      iex> {:ok, usb} = Arb.open()
+      iex> {:ok, board} = Arb.board_at(usb, "1-1.3")
+      iex> Arb.location(board)
+      "1-1.3"
+
+      iex> {:ok, usb} = Arb.open()
+      iex> Arb.board_at(usb, "not-a-location")
+      {:error, %Arb.Error{reason: {:invalid_location, "not-a-location"}}}
+
+  """
+  @doc since: "0.20.0"
+  @spec board_at(Usb.t(), location()) :: {:ok, Board.t()} | {:error, Arb.Error.t()}
+  def board_at(%Usb{} = usb, location) when is_binary(location) do
+    __board_at__(usb, location)
+  end
+
+  @doc """
+  Returns where `board` sits on the USB tree, or `nil` if it names no particular
+  board.
+
+  A string like `"1-1.3"`, and the identifier `port/1` is not: store it, and
+  `board_at/2` resolves it back to the same board across restarts. `nil` for a
+  board from `board/2`, which names a port rather than a board and so has
+  nothing stable to report.
+  """
+  @doc since: "0.20.0"
+  @spec location(Board.t()) :: location() | nil
+  def location(%Board{location: location}), do: location
+
+  @doc """
   Returns the USB port `board` is named by, or `nil` if it names no particular
   board.
 
-  A label, not an identifier — see the `:port` option on `board/2`. Use
-  `inspect/1` to tell two boards apart.
+  A label, not an identifier — see the `:port` option on `board/2`.
+  `location/1` is the identifier, and `inspect/1` renders both.
   """
   @doc since: "0.20.0"
   @spec port(Board.t()) :: port_no() | nil
@@ -238,6 +290,7 @@ defmodule Arb do
 
   defp __open__, do: :erlang.nif_error(:nif_not_loaded)
   defp __board__(_usb, _port), do: :erlang.nif_error(:nif_not_loaded)
+  defp __board_at__(_usb, _location), do: :erlang.nif_error(:nif_not_loaded)
   defp __boards__(_usb), do: :erlang.nif_error(:nif_not_loaded)
   defp __set_relays__(_board, _ids, _verify), do: :erlang.nif_error(:nif_not_loaded)
   defp __relays__(_board), do: :erlang.nif_error(:nif_not_loaded)

@@ -34,16 +34,21 @@ struct BoardTerm {
     /// attached". A label rather than an identifier: it is unique only among one
     /// hub's ports.
     port: Option<u8>,
-    /// `arb`'s own rendering — `port 3 (bus 1, path 1.3)` — which is the only
-    /// thing that tells apart two boards sharing a port number.
-    description: String,
+    /// Where the board sits on the USB tree — `1-1.3` — or `nil` for a board
+    /// named by port, which has nothing stable to report.
+    ///
+    /// Carried as `arb`'s own rendering rather than as its parts, because that
+    /// string is exactly what `Usb::board_at` parses back and what a consumer
+    /// puts in a configuration file. `Location` deliberately exposes nothing
+    /// else, so there are no parts to carry.
+    location: Option<String>,
 }
 
 impl BoardTerm {
     fn new(board: arb::Board) -> Self {
         Self {
             port: board.port(),
-            description: board.to_string(),
+            location: board.location().map(ToString::to_string),
             reference: ResourceArc::new(BoardResource(board)),
         }
     }
@@ -99,6 +104,7 @@ impl From<arb::Error> for ArbError {
                 busy,
                 verification_failed,
                 invalid_relay,
+                invalid_location,
                 unexpected_transfer_length,
                 self_test_failed,
                 usb,
@@ -120,6 +126,12 @@ impl From<arb::Error> for ArbError {
             },
             arb::Error::InvalidRelay(relay) => ArbError {
                 reason: Reason::Relay(RelayTuple(atom::invalid_relay(), relay)),
+            },
+            // Carries the offending string rather than a rendered sentence: this
+            // is a configuration value that did not take, and the caller needs to
+            // see which one.
+            arb::Error::InvalidLocation(location) => ArbError {
+                reason: Reason::Message(MessageTuple(atom::invalid_location(), location)),
             },
             err @ arb::Error::UnexpectedTransferLength { .. } => {
                 ArbError::message(atom::unexpected_transfer_length(), err)
@@ -241,6 +253,13 @@ fn open() -> Result<UsbTerm, ArbError> {
 #[rustler::nif(name = "__board__")]
 fn board(usb: UsbTerm, port: Option<u8>) -> BoardTerm {
     BoardTerm::new(usb.reference.0.board(port))
+}
+
+/// Parsing can fail, which is the point: a mistyped location fails here, at
+/// startup, rather than resolving to nothing at the first relay switch.
+#[rustler::nif(name = "__board_at__")]
+fn board_at(usb: UsbTerm, location: String) -> Result<BoardTerm, ArbError> {
+    Ok(BoardTerm::new(usb.reference.0.board_at(location.parse()?)))
 }
 
 #[rustler::nif(schedule = "DirtyIo", name = "__boards__")]
