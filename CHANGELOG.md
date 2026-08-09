@@ -102,6 +102,9 @@ swappable. `Arb.Usb` documents when to replace one.
 - Documentation for the re-enumeration that follows `Arb.reset_device/1`, where
   `:ok` means the reset was issued and not that the board is back — so the
   `:not_found` that follows is not the reset having failed
+- Documentation for what replacing a soured context can and cannot fix, in
+  `Arb.Usb`: a replacement is unvetted until `self_test/1` says otherwise, and it
+  reaches no device, so a wedged board wants `reset_device/1` instead
 
 ### Fixed
 
