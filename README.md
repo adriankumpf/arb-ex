@@ -76,10 +76,16 @@ context per call — is covered in the [changelog](CHANGELOG.md).
 
 ## Development
 
+Rust is the only prerequisite. `config/config.exs` forces a source build in this
+repo, so a clean clone works without setting anything:
+
 ```bash
-docker build -t arb-ex .
-docker run --privileged -it arb-ex
+mix test
 ```
+
+Tests tagged `:libusb` exercise the real NIF and need a USB bus — not a relay
+board. They run by default and are excluded only in CI, which has no bus at all
+(see `.github/workflows/ci.yml`).
 
 ### Releasing
 
