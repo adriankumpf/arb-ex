@@ -25,8 +25,8 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: "1.19"
-              otp: "28"
+              elixir: "1.20"
+              otp: "29"
             lint: lint
           - pair:
               elixir: "1.15"
