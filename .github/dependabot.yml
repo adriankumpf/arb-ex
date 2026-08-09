@@ -1,16 +1,56 @@
 version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "monthly"
 
-  - package-ecosystem: "cargo"
-    directory: "/native/arb"
+# Every cargo crate and every action below ends up inside a published artifact,
+# so a poisoned release would reach consumers as a binary they cannot inspect.
+# The cooldown is longer than the 3 days GitHub now defaults to: nothing here
+# releases often enough for the latency to cost anything. It delays version
+# updates only — security updates are never held back.
+
+updates:
+  - package-ecosystem: cargo
+    directory: /native/arb_native
     schedule:
-      interval: "monthly"
+      interval: weekly
+
+    cooldown:
+      default-days: 5
+
+    # `dependency-type: all` so `libusb1-sys` is watched too: it sits under
+    # `rusb`, and its vendored libusb is what the artifacts statically link.
+    # RustSec carries no advisory for it, so nothing else reports a fix.
+    allow:
+      - dependency-type: all
+
+    groups:
+      # `rusb` and `libusb1-sys` land on their own so they don't read as
+      # routine churn.
+      cargo:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - rusb
+          - libusb1-sys
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+    cooldown:
+      default-days: 5
+
+    groups:
+      # As above, for the action that decides what goes inside an artifact.
+      actions:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - philss/rustler-precompiled-action
 
   - package-ecosystem: mix
-    directory: "/"
+    directory: /
     schedule:
-      interval: "monthly"
+      interval: monthly
+
+    cooldown:
+      default-days: 5
