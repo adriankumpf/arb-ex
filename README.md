@@ -10,9 +10,9 @@ An Elixir NIF for controlling the ABACOM CH341A relay board
 
 ### Requirements
 
-In order to compile a recent version of `rust` must be installed. Also, the
-native [libusb](https://github.com/libusb/libusb) library is required (e.g
-`libusb-1.0-0-dev` on Debian-based distributions).
+In order to compile a recent version of `rust` must be installed.
+[libusb](https://github.com/libusb/libusb) is not required — it is built from
+the copy vendored in the crate and linked into the NIF.
 
 ### Installation
 

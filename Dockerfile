@@ -5,8 +5,10 @@ ENV RUST_VERSION="1.97.1" \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# No `libusb-1.0-0-dev`: the NIF vendors libusb and compiles it from source, so
+# a C compiler is all that is needed.
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
-    libusb-1.0-0-dev curl build-essential libsctp1
+    curl build-essential libsctp1
 
 RUN curl https://sh.rustup.rs -sSf | \
     sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION && \
