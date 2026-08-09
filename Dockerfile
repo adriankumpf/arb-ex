@@ -1,4 +1,4 @@
-FROM hexpm/elixir:1.20.2-erlang-29.0.3-debian-bookworm-20260713-slim AS releaser
+FROM hexpm/elixir:1.20.3-erlang-29.0.5-debian-bookworm-20260803-slim AS releaser
 
 ENV RUST_VERSION="1.97.1" \
     PATH=/root/.cargo/bin:$PATH
