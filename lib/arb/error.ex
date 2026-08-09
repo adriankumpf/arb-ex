@@ -14,6 +14,10 @@ defmodule Arb.Error do
 
   ## Retrying
 
+  `retryable?/1` and `moved_relays?/1` answer the two questions below as
+  functions, so that a caller does not have to re-encode this list and go one
+  release out of date. What follows is why they answer the way they do.
+
   `:busy` means another application held the board's USB interface for the
   duration of your call. It is normal on a shared board and says nothing is
   wrong, so **retry it, and do not `Arb.reset_device/1` in response** — a USB
@@ -61,4 +65,61 @@ defmodule Arb.Error do
   # Only reached for a struct built by hand — anything from the NIF carries its
   # own rendering.
   def message(%__MODULE__{reason: reason}), do: "arb error: #{inspect(reason)}"
+
+  @doc """
+  Whether another attempt on the same handle is worth making.
+
+  True for `:busy` and `:not_found`; see [Retrying](`t:reason/0`) for why, and
+  for why a USB reset is the wrong answer to either. Everything else describes a
+  board that answered wrongly, or a context that may have soured — see `Arb.Usb`
+  for what to do with those. `{:unknown, _}` is among them: it carries a bug as
+  readily as a variant from a newer `arb`, so it is not an "unclassified, treat
+  gently" bucket. Nor is a reason this library grows later, until this function
+  is taught otherwise.
+
+  A function, not a guard, so a `when reason in [:busy, :not_found]` this
+  replaces moves into the clause body.
+
+  Takes a bare reason as well as the struct, for callers that cannot match
+  `%Arb.Error{}` — a dependency declared `only: :prod`, say.
+
+  ## Examples
+
+      iex> Arb.Error.retryable?(%Arb.Error{reason: :busy, message: "in use"})
+      true
+
+      iex> Arb.Error.retryable?(:self_test_failed)
+      false
+
+  """
+  @doc since: "0.20.0"
+  @spec retryable?(t | reason) :: boolean
+  def retryable?(%__MODULE__{reason: reason}), do: retryable?(reason)
+  def retryable?(reason) when reason in [:busy, :not_found], do: true
+  def retryable?(_reason), do: false
+
+  @doc """
+  Whether the failed operation may have left relays somewhere nobody knows.
+
+  True only for `{:verification_failed, _, _}`, which latches before it reads
+  back; every other reason either moved no relay or never reached the latch. It
+  does not say where they landed — `Arb.relays/1` is how you find that out. See
+  [Retrying](`t:reason/0`).
+
+  Takes a bare reason as well as the struct, as `retryable?/1` does.
+
+  ## Examples
+
+      iex> Arb.Error.moved_relays?({:verification_failed, [1, 3], [1]})
+      true
+
+      iex> Arb.Error.moved_relays?(:self_test_failed)
+      false
+
+  """
+  @doc since: "0.20.0"
+  @spec moved_relays?(t | reason) :: boolean
+  def moved_relays?(%__MODULE__{reason: reason}), do: moved_relays?(reason)
+  def moved_relays?({:verification_failed, _expected, _actual}), do: true
+  def moved_relays?(_reason), do: false
 end

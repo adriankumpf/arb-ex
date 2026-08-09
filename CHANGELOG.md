@@ -90,6 +90,12 @@ swappable. `Arb.Usb` documents when to replace one.
   way past. It moves no relay, so it is safe to call on a live board
 - The `{:unknown, message}` error reason, which is how a variant added to `arb`'s
   non-exhaustive error type reaches Elixir without the NIF failing to compile
+- `Arb.Error.retryable?/1` and `Arb.Error.moved_relays?/1`, answering as
+  functions what the `Arb.Error` typedoc previously only argued in prose — which
+  reasons are worth another attempt, and which one leaves the relays somewhere
+  unknown — so that a caller no longer re-encodes that list and goes a release
+  out of date. Each takes a bare reason as well as an `%Arb.Error{}`, for callers
+  that cannot match the struct
 
 ### Fixed
 
