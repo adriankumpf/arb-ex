@@ -14,9 +14,9 @@ defmodule Arb.Error do
 
   ## Retrying
 
-  `retry_in_place?/1` and `relay_state_unknown?/1` answer the two questions below
-  as functions, so that a caller does not have to re-encode this list and go one
-  release out of date. What follows is why they answer the way they do.
+  `retry_in_place?/1` answers the question below as a function, so that a caller
+  does not have to re-encode this list and go one release out of date. What
+  follows is why it answers the way it does.
 
   `:busy` means another application held the board's USB interface for the
   duration of your call. It is normal on a shared board and says nothing is
@@ -44,6 +44,12 @@ defmodule Arb.Error do
     * `{:verification_failed, expected, actual}` latched the relays *before*
       reading back, so their physical state is unknown — `expected`, `actual`, or
       neither. `Arb.relays/1` is how you find out what actually landed.
+
+  It is not the only failure that can leave the relays somewhere unknown, and
+  which ones can is a property of the call rather than of the reason: the same
+  `{:usb, _}` moved nothing on a read and may have latched on a write. See
+  [After a failure](`Arb.set_relays/3`) for the rule, which is why there is no
+  function here to ask — this type does not carry what the answer depends on.
   """
   @type reason ::
           :not_found
@@ -107,31 +113,4 @@ defmodule Arb.Error do
   def retry_in_place?(%__MODULE__{reason: reason}), do: retry_in_place?(reason)
   def retry_in_place?(reason) when reason in [:busy, :not_found], do: true
   def retry_in_place?(_reason), do: false
-
-  @doc """
-  Whether the relays' physical position is unknown after the failure.
-
-  True only for `{:verification_failed, _, _}`, which latches before it reads
-  back; every other reason either moved no relay or never reached the latch.
-
-  True is a statement of ignorance rather than of movement: the relays may sit at
-  `expected`, at `actual`, or at neither, and `Arb.relays/1` is how you find out.
-  False is the firm half — nothing latched. See [Retrying](`t:reason/0`).
-
-  Takes a bare reason as well as the struct, as `retry_in_place?/1` does.
-
-  ## Examples
-
-      iex> Arb.Error.relay_state_unknown?({:verification_failed, [1, 3], [1]})
-      true
-
-      iex> Arb.Error.relay_state_unknown?(:self_test_failed)
-      false
-
-  """
-  @doc since: "0.20.0"
-  @spec relay_state_unknown?(t | reason) :: boolean
-  def relay_state_unknown?(%__MODULE__{reason: reason}), do: relay_state_unknown?(reason)
-  def relay_state_unknown?({:verification_failed, _expected, _actual}), do: true
-  def relay_state_unknown?(_reason), do: false
 end

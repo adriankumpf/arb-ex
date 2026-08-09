@@ -87,11 +87,10 @@ Three behaviour changes the table does not show:
   number
 - `Arb.self_test/1`, the read-back check `get_active/1` used to perform on the
   way past. It moves no relay, so it is safe to call on a live board
-- `Arb.Error.retry_in_place?/1` and `Arb.Error.relay_state_unknown?/1` — which
-  reasons are worth another attempt as they stand, and which one leaves the
-  relays somewhere unknown — so a caller no longer re-encodes that list and goes
-  a release out of date. Each takes a bare reason as well as an `%Arb.Error{}`,
-  for callers that cannot match the struct
+- `Arb.Error.retry_in_place?/1` — which reasons are worth another attempt as
+  they stand, so a caller no longer re-encodes that list and goes a release out
+  of date. It takes a bare reason as well as an `%Arb.Error{}`, for callers that
+  cannot match the struct
 - The `{:unknown, message}` error reason, which is how a variant added to `arb`'s
   non-exhaustive error type reaches Elixir
 - `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so the accepted option
