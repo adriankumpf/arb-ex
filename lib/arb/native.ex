@@ -8,29 +8,37 @@ defmodule Arb.Native do
 
   version = Mix.Project.config()[:version]
 
+  # Passed only when asked for: `RustlerPrecompiled` merges `:force_build` with
+  # `Keyword.put_new`, so passing it at all — even as `false` — would shadow
+  # `config :rustler_precompiled, :force_build, arb: true`. That is what
+  # `config/config.exs` builds from source with, and what the library's own error
+  # message tells consumers to reach for.
+  force_build = if System.get_env("ARB_BUILD") in ["1", "true"], do: [force_build: true], else: []
+
   use RustlerPrecompiled,
-    otp_app: :arb,
-    crate: "arb_native",
-    base_url: "https://github.com/adriankumpf/arb-ex/releases/download/v#{version}",
-    version: version,
-    force_build: System.get_env("ARB_BUILD") in ["1", "true"],
-    # NIF 2.16 is OTP 24, the oldest this package supports, and a NIF is
-    # forwards compatible within a major.
-    nif_versions: ["2.16"],
-    # Must match what `.github/workflows/release.yml` builds: a target listed
-    # here but not built gets a download error instead of the source build it
-    # needs. Windows is left out on purpose — rusb can only reach a device there
-    # through a WinUSB/libusbK driver installed by hand, so an artifact would not
-    # make a board work anyway.
-    targets: ~w(
-      aarch64-apple-darwin
-      x86_64-apple-darwin
-      aarch64-unknown-linux-gnu
-      aarch64-unknown-linux-musl
-      arm-unknown-linux-gnueabihf
-      x86_64-unknown-linux-gnu
-      x86_64-unknown-linux-musl
-    )
+      [
+        otp_app: :arb,
+        crate: "arb_native",
+        base_url: "https://github.com/adriankumpf/arb-ex/releases/download/v#{version}",
+        version: version,
+        # NIF 2.16 is OTP 24, the oldest this package supports, and a NIF is
+        # forwards compatible within a major.
+        nif_versions: ["2.16"],
+        # Must match what `.github/workflows/release.yml` builds: a target listed
+        # here but not built gets a download error instead of the source build it
+        # needs. Windows is left out on purpose — rusb can only reach a device
+        # there through a WinUSB/libusbK driver installed by hand, so an artifact
+        # would not make a board work anyway.
+        targets: ~w(
+          aarch64-apple-darwin
+          x86_64-apple-darwin
+          aarch64-unknown-linux-gnu
+          aarch64-unknown-linux-musl
+          arm-unknown-linux-gnueabihf
+          x86_64-unknown-linux-gnu
+          x86_64-unknown-linux-musl
+        )
+      ] ++ force_build
 
   def open, do: :erlang.nif_error(:nif_not_loaded)
   def board(_usb, _port), do: :erlang.nif_error(:nif_not_loaded)
