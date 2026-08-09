@@ -281,9 +281,9 @@ defmodule Arb do
   failure as the reset having failed**.
 
   How long it stays away is the host's business: a hub, a loaded machine or
-  another kernel each answer differently. `Arb.Error.retryable?/1` vouches for
-  `:not_found`, so retrying until the board answers is what finds out; a delay
-  guessed in advance is either too short or wasted.
+  another kernel each answer differently. `Arb.Error.retry_in_place?/1` vouches
+  for `:not_found`, so retrying until the board answers is what finds out; a
+  delay guessed in advance is either too short or wasted.
 
   ## Examples
 

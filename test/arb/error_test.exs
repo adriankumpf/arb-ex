@@ -30,7 +30,7 @@ defmodule Arb.ErrorTest do
   # below, and "classifies every reason in the type" reads the type back to prove
   # it — so a reason added without a decision here fails a test rather than
   # falling into a catch-all unnoticed.
-  @retryable [:busy, :not_found]
+  @retry_in_place [:busy, :not_found]
 
   @verification_failed {:verification_failed, [1, 3], [1]}
 
@@ -43,39 +43,39 @@ defmodule Arb.ErrorTest do
     {:unknown, "something new"}
   ]
 
-  describe "retryable?/1" do
+  describe "retry_in_place?/1" do
     test "retries a collision and a board that is still enumerating" do
-      for reason <- @retryable do
-        assert Arb.Error.retryable?(reason)
-        assert Arb.Error.retryable?(%Arb.Error{reason: reason})
+      for reason <- @retry_in_place do
+        assert Arb.Error.retry_in_place?(reason)
+        assert Arb.Error.retry_in_place?(%Arb.Error{reason: reason})
       end
     end
 
     test "does not retry a board that answered wrongly or a context that may have soured" do
       for reason <- @fatal do
-        refute Arb.Error.retryable?(reason)
-        refute Arb.Error.retryable?(%Arb.Error{reason: reason})
+        refute Arb.Error.retry_in_place?(reason)
+        refute Arb.Error.retry_in_place?(%Arb.Error{reason: reason})
       end
     end
   end
 
-  describe "moved_relays?/1" do
+  describe "relay_state_unknown?/1" do
     test "a failed verification latched before it read back" do
-      assert Arb.Error.moved_relays?(@verification_failed)
-      assert Arb.Error.moved_relays?(%Arb.Error{reason: @verification_failed})
+      assert Arb.Error.relay_state_unknown?(@verification_failed)
+      assert Arb.Error.relay_state_unknown?(%Arb.Error{reason: @verification_failed})
     end
 
     test "nothing else reached the latch" do
-      for reason <- (@retryable ++ @fatal) -- [@verification_failed] do
-        refute Arb.Error.moved_relays?(reason)
-        refute Arb.Error.moved_relays?(%Arb.Error{reason: reason})
+      for reason <- (@retry_in_place ++ @fatal) -- [@verification_failed] do
+        refute Arb.Error.relay_state_unknown?(reason)
+        refute Arb.Error.relay_state_unknown?(%Arb.Error{reason: reason})
       end
     end
   end
 
   test "classifies every reason in the type" do
     assert MapSet.new(reason_tags()) ==
-             MapSet.new(@retryable ++ @fatal, &tag/1)
+             MapSet.new(@retry_in_place ++ @fatal, &tag/1)
   end
 
   # The leading atom is what distinguishes one reason from another; the payload

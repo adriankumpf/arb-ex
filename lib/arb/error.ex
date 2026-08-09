@@ -14,8 +14,8 @@ defmodule Arb.Error do
 
   ## Retrying
 
-  `retryable?/1` and `moved_relays?/1` answer the two questions below as
-  functions, so that a caller does not have to re-encode this list and go one
+  `retry_in_place?/1` and `relay_state_unknown?/1` answer the two questions below
+  as functions, so that a caller does not have to re-encode this list and go one
   release out of date. What follows is why they answer the way they do.
 
   `:busy` means another application held the board's USB interface for the
@@ -27,6 +27,13 @@ defmodule Arb.Error do
   fault, will want that arm separated out.
 
   `:not_found` is also worth retrying — a board can be mid-re-enumeration.
+
+  Neither is a promise that the wait is short. A peer using `arb` claims for one
+  operation and is gone in microseconds, but anything else can hold the interface
+  for as long as it likes, and a board unplugged for good never re-enumerates.
+  Retrying stays the right answer in both cases — nothing else here helps — so a
+  loop over them needs its own way out. See `Arb.Usb` for why that limit is yours
+  to set.
 
   The remaining two describe a board that answered, and answered wrongly, so
   retrying does not fix them — but they differ in what they leave behind:
@@ -67,15 +74,18 @@ defmodule Arb.Error do
   def message(%__MODULE__{reason: reason}), do: "arb error: #{inspect(reason)}"
 
   @doc """
-  Whether another attempt on the same handle is worth making.
+  Whether to retry the same call on the same handle, changing nothing else.
 
   True for `:busy` and `:not_found`; see [Retrying](`t:reason/0`) for why, and
-  for why a USB reset is the wrong answer to either. Everything else describes a
-  board that answered wrongly, or a context that may have soured — see `Arb.Usb`
-  for what to do with those. `{:unknown, _}` is among them: it carries a bug as
-  readily as a variant from a newer `arb`, so it is not an "unclassified, treat
-  gently" bucket. Nor is a reason this library grows later, until this function
-  is taught otherwise.
+  for why a USB reset is the wrong answer to either. *In place* is the whole of
+  the claim — retry, rather than replace the context or reset the device — and it
+  holds however long the condition lasts, which is not this library's to predict.
+
+  Everything else describes a board that answered wrongly, or a context that may
+  have soured — see `Arb.Usb` for what to do with those. `{:unknown, _}` is among
+  them: it carries a bug as readily as a variant from a newer `arb`, so it is not
+  an "unclassified, treat gently" bucket. Nor is a reason this library grows
+  later, until this function is taught otherwise.
 
   A function, not a guard, so a `when reason in [:busy, :not_found]` this
   replaces moves into the clause body.
@@ -85,41 +95,43 @@ defmodule Arb.Error do
 
   ## Examples
 
-      iex> Arb.Error.retryable?(%Arb.Error{reason: :busy, message: "in use"})
+      iex> Arb.Error.retry_in_place?(%Arb.Error{reason: :busy, message: "in use"})
       true
 
-      iex> Arb.Error.retryable?(:self_test_failed)
+      iex> Arb.Error.retry_in_place?(:self_test_failed)
       false
 
   """
   @doc since: "0.20.0"
-  @spec retryable?(t | reason) :: boolean
-  def retryable?(%__MODULE__{reason: reason}), do: retryable?(reason)
-  def retryable?(reason) when reason in [:busy, :not_found], do: true
-  def retryable?(_reason), do: false
+  @spec retry_in_place?(t | reason) :: boolean
+  def retry_in_place?(%__MODULE__{reason: reason}), do: retry_in_place?(reason)
+  def retry_in_place?(reason) when reason in [:busy, :not_found], do: true
+  def retry_in_place?(_reason), do: false
 
   @doc """
-  Whether the failed operation may have left relays somewhere nobody knows.
+  Whether the relays' physical position is unknown after the failure.
 
   True only for `{:verification_failed, _, _}`, which latches before it reads
-  back; every other reason either moved no relay or never reached the latch. It
-  does not say where they landed — `Arb.relays/1` is how you find that out. See
-  [Retrying](`t:reason/0`).
+  back; every other reason either moved no relay or never reached the latch.
 
-  Takes a bare reason as well as the struct, as `retryable?/1` does.
+  True is a statement of ignorance rather than of movement: the relays may sit at
+  `expected`, at `actual`, or at neither, and `Arb.relays/1` is how you find out.
+  False is the firm half — nothing latched. See [Retrying](`t:reason/0`).
+
+  Takes a bare reason as well as the struct, as `retry_in_place?/1` does.
 
   ## Examples
 
-      iex> Arb.Error.moved_relays?({:verification_failed, [1, 3], [1]})
+      iex> Arb.Error.relay_state_unknown?({:verification_failed, [1, 3], [1]})
       true
 
-      iex> Arb.Error.moved_relays?(:self_test_failed)
+      iex> Arb.Error.relay_state_unknown?(:self_test_failed)
       false
 
   """
   @doc since: "0.20.0"
-  @spec moved_relays?(t | reason) :: boolean
-  def moved_relays?(%__MODULE__{reason: reason}), do: moved_relays?(reason)
-  def moved_relays?({:verification_failed, _expected, _actual}), do: true
-  def moved_relays?(_reason), do: false
+  @spec relay_state_unknown?(t | reason) :: boolean
+  def relay_state_unknown?(%__MODULE__{reason: reason}), do: relay_state_unknown?(reason)
+  def relay_state_unknown?({:verification_failed, _expected, _actual}), do: true
+  def relay_state_unknown?(_reason), do: false
 end

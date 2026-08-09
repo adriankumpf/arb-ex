@@ -62,7 +62,7 @@ Three behaviour changes the table does not show:
 - Rename `:bad_device` to `:self_test_failed`
 - Report a board held by another application as `:busy` rather than
   `{:usb, "Resource busy"}`, which made it indistinguishable from a real USB
-  fault even though it is normal and retryable
+  fault even though it is routine and worth retrying as it stands
 - Validate `:port` as a byte. `arb` takes a `u8`, so a larger number previously
   reached the NIF and failed to decode with an opaque `ArgumentError`
 - Carry `arb`'s own rendering on `Arb.Error` as `:message` instead of re-deriving
@@ -87,11 +87,11 @@ Three behaviour changes the table does not show:
   number
 - `Arb.self_test/1`, the read-back check `get_active/1` used to perform on the
   way past. It moves no relay, so it is safe to call on a live board
-- `Arb.Error.retryable?/1` and `Arb.Error.moved_relays?/1` — which reasons are
-  worth another attempt, and which one leaves the relays somewhere unknown — so
-  a caller no longer re-encodes that list and goes a release out of date. Each
-  takes a bare reason as well as an `%Arb.Error{}`, for callers that cannot match
-  the struct
+- `Arb.Error.retry_in_place?/1` and `Arb.Error.relay_state_unknown?/1` — which
+  reasons are worth another attempt as they stand, and which one leaves the
+  relays somewhere unknown — so a caller no longer re-encodes that list and goes
+  a release out of date. Each takes a bare reason as well as an `%Arb.Error{}`,
+  for callers that cannot match the struct
 - The `{:unknown, message}` error reason, which is how a variant added to `arb`'s
   non-exhaustive error type reaches Elixir
 - `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so the accepted option

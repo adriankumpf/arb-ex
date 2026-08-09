@@ -22,9 +22,9 @@ defmodule Arb.Usb do
   from a transient fault, so any classification would be guesswork. Since
   `Arb.open/0` is cheap next to the failures it recovers from, the robust policy
   is the simple one: **drop the struct and `Arb.open/0` a new one on any failure
-  `Arb.Error.retryable?/1` does not vouch for** — a retryable one says nothing is
-  wrong with the context, so retry it in place first, and in particular do not
-  answer it with `Arb.reset_device/1`.
+  `Arb.Error.retry_in_place?/1` does not vouch for** — one it vouches for says
+  nothing is wrong with the context, so retry in place first, and in particular
+  do not answer it with `Arb.reset_device/1`.
 
   Rebuild the `Arb.Board` handles alongside the context: a board holds its own
   reference to the context it came from, so one kept across a reopen goes on
