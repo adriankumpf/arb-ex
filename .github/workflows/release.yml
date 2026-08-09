@@ -1,0 +1,120 @@
+name: Build precompiled NIFs
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_release:
+    name: NIF ${{ matrix.nif }} - ${{ matrix.job.target }}
+    runs-on: ${{ matrix.job.os }}
+
+    permissions:
+      # For creating the release the artifacts are attached to.
+      contents: write
+      # For `actions/attest`.
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Must match `nif_versions:` in `lib/arb/native.ex`.
+        nif: ["2.16"]
+        job:
+          # Every Linux target goes through `cross`, including the two that could
+          # build natively: the cross images are Ubuntu 16.04, so the artifacts
+          # need glibc 2.23. Built on the runner they would need the runner's
+          # glibc and refuse to load on Debian bullseye and older.
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-24.04, use-cross: true }
+          - { target: aarch64-unknown-linux-musl, os: ubuntu-24.04, use-cross: true }
+          - { target: arm-unknown-linux-gnueabihf, os: ubuntu-24.04, use-cross: true }
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-24.04, use-cross: true }
+          - { target: x86_64-unknown-linux-musl, os: ubuntu-24.04, use-cross: true }
+          - { target: aarch64-apple-darwin, os: macos-15 }
+          - { target: x86_64-apple-darwin, os: macos-15-intel }
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+
+      - name: Extract project version
+        shell: bash
+        run: |
+          echo "PROJECT_VERSION=$(sed -n 's/^  @version "\(.*\)"/\1/p' mix.exs | head -n1)" >> $GITHUB_ENV
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # `cross` builds inside a container that brings its own toolchain, so
+          # only a native build needs the target's std installed on the runner.
+          target: ${{ !matrix.job.use-cross && matrix.job.target || '' }}
+
+      - name: Build the project
+        id: build-crate
+        uses: philss/rustler-precompiled-action@v1.1.5
+        with:
+          project-name: arb_native
+          project-version: ${{ env.PROJECT_VERSION }}
+          target: ${{ matrix.job.target }}
+          nif-version: ${{ matrix.nif }}
+          use-cross: ${{ matrix.job.use-cross }}
+          project-dir: native/arb_native
+
+      # libusb is vendored into the artifact on purpose, so one that still wants
+      # `libusb-1.0.so.0` — or `libudev.so.1`, which the vendored build picks up
+      # when the image happens to have it — would fail to load on a machine that
+      # never installed either.
+      - name: Assert the artifact carries libusb
+        shell: bash
+        run: |
+          dir="native/arb_native/target/${{ matrix.job.target }}/release"
+          if [ "$RUNNER_OS" = macOS ]; then
+            lib="$dir/libarb_native.dylib"
+            list=(otool -L)
+          else
+            lib="$dir/libarb_native.so"
+            list=(readelf -d)
+          fi
+
+          # Fail loudly if the artifact moved: an unreadable file would otherwise
+          # leave the grep below with nothing to match and pass the assertion.
+          test -f "$lib" || { echo "::error::no artifact at $lib"; exit 1; }
+
+          needed=$("${list[@]}" "$lib")
+          echo "$needed"
+
+          if grep -qE 'libusb|libudev' <<<"$needed"; then
+            echo "::error::$lib links libusb/libudev dynamically; the vendored feature did not take effect"
+            exit 1
+          fi
+
+      - uses: actions/attest@v4
+        with:
+          subject-path: ${{ steps.build-crate.outputs.file-path }}
+
+      # Only for `workflow_dispatch` dry runs. On a tag the same bytes go out as a
+      # release asset below, which is the copy `mix rustler_precompiled.download`
+      # actually reads.
+      - name: Artifact upload
+        uses: actions/upload-artifact@v7
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        with:
+          name: ${{ steps.build-crate.outputs.file-name }}
+          path: ${{ steps.build-crate.outputs.file-path }}
+
+      # Not a draft: `mix rustler_precompiled.download` fetches these over plain
+      # HTTP with no credentials, and draft assets are not public.
+      - name: Publish archives and packages
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ${{ steps.build-crate.outputs.file-path }}

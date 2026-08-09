@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       MIX_ENV: test
-      FORCE_BUILD: true
 
     name: Elixir ${{ matrix.pair.elixir }} / OTP ${{ matrix.pair.otp }}
 
@@ -101,8 +100,8 @@ jobs:
       - run: mix compile --warnings-as-errors
         if: ${{ matrix.lint }}
 
-      # Hosted runners are VMs with no USB bus, so `libusb_init` has no usbfs to
-      # find and `Arb.open/0` cannot succeed here. Everything that needs a
-      # context is tagged `:libusb`. Nothing in CI runs those yet — they are for
-      # a machine with a bus, so run them by hand before cutting a release.
+      # Hosted runners have no /dev/bus/usb, so `libusb_init` finds no usbfs and
+      # `Arb.open/0` returns `{:usb, "Other error"}`. Everything that needs a
+      # context is tagged `:libusb`. Those tests want a bus, not a relay board,
+      # so run them by hand on any machine with one before cutting a release.
       - run: mix test --exclude libusb

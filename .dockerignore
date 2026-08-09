@@ -1,9 +1,0 @@
-.formatter.exs
-.git/
-.gitignore
-Dockerfile
-_build/
-deps/
-test/
-native/arb_native/target/
-doc/
