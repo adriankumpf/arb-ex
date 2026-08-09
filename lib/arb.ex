@@ -19,20 +19,28 @@ defmodule Arb do
   your application starts and hold it — see `Arb.Usb` for the figures and for how
   to replace one that has gone bad.
 
-  One context for the node is enough: an `Arb.Usb` is safe to use from any
-  process, and a board is claimed only for the duration of a single call. Holding
-  one per process that drives a board buys no throughput — the saving is per
-  *call* either way — but it does mean the process that hits a failure owns the
-  context it has to rebuild, at the cost of an `Arb.open/0` in every `init/1`:
+  Hold it in whatever owns the recovery. One context for the node would do for
+  throughput: an `Arb.Usb` is safe to use from any process, a board is claimed
+  only for the duration of a single call, and the saving is per *call* either
+  way. But a failure means dropping the context and opening another, and the
+  context belongs to whoever does the dropping. One per process that drives a
+  board, or one per board where two of them should not share a bad day, costs an
+  `Arb.open/0` per owner at boot and buys each a recovery that leaves the others
+  alone:
 
       defmodule MyApp.Board do
         use GenServer
 
         def init(port) do
           {:ok, usb} = Arb.open()
-          {:ok, %{board: Arb.board(usb, port: port), usb: usb}}
+          {:ok, %{board: Arb.board(usb, port: port)}}
         end
       end
+
+  The example keeps no `Arb.Usb`. A board holds its own reference to the context
+  it came from, so holding the board keeps the context alive, and replacing one
+  replaces both. Keep the `Arb.Usb` too only if you mean to name another board or
+  to call `list_boards/1` through it.
 
   `Arb.Board` is the cheap half. It resolves nothing until an operation is called
   on it, so it can be built per call, held in state, or passed around freely.

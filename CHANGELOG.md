@@ -40,7 +40,12 @@ board = Arb.board(usb, port: 3)
 Who holds the context is now your decision, because a held context is **not
 self-healing**: where 0.19 built a fresh one per call and therefore recovered
 from a soured libusb state by accident, 0.20 does not. Keep it somewhere
-swappable. `Arb.Usb` documents when to replace one.
+swappable. `Arb.Usb` documents when to replace one, and what a replacement does
+and does not fix.
+
+Hold one per thing that owns a recovery — a process, or a board — rather than
+one for the node; the decision is about recovery, not throughput. Holding the
+`Arb.Board` is enough to hold the context with it.
 
 ### Changed (**breaking**)
 
