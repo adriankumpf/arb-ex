@@ -3,7 +3,13 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - master
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   mix_test:
@@ -71,6 +77,8 @@ jobs:
             ~/.cargo/git/db/
             native/arb_native/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Clean to rule out incremental build as a source of flakiness
         if: github.run_attempt != '1'
@@ -93,4 +101,8 @@ jobs:
       - run: mix compile --warnings-as-errors
         if: ${{ matrix.lint }}
 
-      - run: mix test
+      # Hosted runners are VMs with no USB bus, so `libusb_init` has no usbfs to
+      # find and `Arb.open/0` cannot succeed here. Everything that needs a
+      # context is tagged `:libusb`. Nothing in CI runs those yet — they are for
+      # a machine with a bus, so run them by hand before cutting a release.
+      - run: mix test --exclude libusb

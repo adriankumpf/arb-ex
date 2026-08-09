@@ -2,7 +2,7 @@ name: Rust CI
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "native/**"
   pull_request:
@@ -10,6 +10,10 @@ on:
       - "native/**"
       - ".github/workflows/rust-ci.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-rust:
@@ -25,6 +29,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v6
 
+      # `cargo test` links a real binary, unlike `clippy`. Without the system
+      # library `libusb1-sys` falls back to compiling its vendored copy, so this
+      # is for build time rather than to make the link work at all.
+      - name: Install libusb
+        run: sudo apt-get update && sudo apt-get install -y libusb-1.0-0-dev
+
       - uses: actions/cache@v5
         with:
           path: |
@@ -34,6 +44,8 @@ jobs:
             ~/.cargo/git/db/
             native/arb_native/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -45,4 +57,7 @@ jobs:
         run: cargo fmt --manifest-path=${{ matrix.manifest }} --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --manifest-path=${{ matrix.manifest }} -- -Dwarnings
+        run: cargo clippy --manifest-path=${{ matrix.manifest }} --all-targets -- -Dwarnings
+
+      - name: Run tests
+        run: cargo test --manifest-path=${{ matrix.manifest }}
