@@ -200,6 +200,26 @@ defmodule Arb do
 
   #{NimbleOptions.docs(@set_relays_schema)}
 
+  ## After a failure
+
+  `:not_found`, `:multiple_found` and `:busy` are raised while claiming the
+  board, before a single byte is written, so the relays are where they were.
+
+  **Every other failure may have latched.** A write is a run of USB transfers
+  with the latch partway through, and a transfer that fails — `{:usb, _}`,
+  `{:unexpected_transfer_length, _}` — may or may not have reached the board.
+  `{:verification_failed, expected, actual}` is that situation named precisely:
+  it latched, then read back something else. So on anything but those three the
+  relay position is unknown until you look, and `relays/1` is how you look —
+  within the limit under [What a read reports](`relays/1`), which the same
+  failure can put on the answer.
+
+  Which failures leave them unknown is a property of *this* call rather than of
+  the reason, which is why `Arb.Error` has no function to ask: the same
+  `{:usb, _}` moved nothing when `relays/1` raised it. No other call here can
+  leave the relays somewhere unknown — `self_test/1` writes without latching,
+  and `reset_device/1` resets the USB device rather than the outputs.
+
   ## Examples
 
       Arb.set_relays(board, [1, 4, 7])
@@ -231,6 +251,29 @@ defmodule Arb do
 
   A plain read: it does not check that the board is answering correctly. That is
   `self_test/1`.
+
+  ## What a read reports
+
+  The relays hang off a shift register, and reading it is destructive — the
+  contents clock out — so a read writes back what it consumed, without latching.
+  What this returns is therefore the register, which the latch keeps equal to the
+  relay outputs.
+
+  A USB failure between the two halves breaks that equality: the read consumed
+  the register and the write-back did not land, leaving the register holding the
+  zeros the read shifted in while the outputs stay latched where they were. The
+  relays have not moved — nothing here latches — but a later read reports the
+  register it finds, so it can answer `{:ok, []}` for a board driving live
+  outputs.
+
+  It does not clear itself. A repeat read finds the same register and puts the
+  same contents back; only a `set_relays/3` that succeeds writes the register and
+  the outputs together again. So a read taken to settle where the relays are
+  after a failed write — see [After a failure](`set_relays/3`) — is trustworthy
+  unless that write, or a read since, failed partway through a register
+  write-back, and a `{:usb, _}` or `{:unexpected_transfer_length, _}` from either
+  is exactly that possibility. With the outputs unknown either way, the honest
+  recovery is to drive them somewhere known rather than to keep asking.
 
   ## Examples
 

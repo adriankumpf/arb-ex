@@ -26,10 +26,10 @@ defmodule Arb.ErrorTest do
     end
   end
 
-  # Every reason in `t:Arb.Error.reason/0` is classified by one of the two lists
-  # below, and "classifies every reason in the type" reads the type back to prove
-  # it — so a reason added without a decision here fails a test rather than
-  # falling into a catch-all unnoticed.
+  # Every reason in `t:Arb.Error.reason/0` falls in one of the two lists below,
+  # and "classifies every reason in the type" reads the type back to prove it —
+  # so a reason added without a decision here fails a test rather than falling
+  # into a catch-all unnoticed.
   @retry_in_place [:busy, :not_found]
 
   @verification_failed {:verification_failed, [1, 3], [1]}
@@ -55,20 +55,6 @@ defmodule Arb.ErrorTest do
       for reason <- @fatal do
         refute Arb.Error.retry_in_place?(reason)
         refute Arb.Error.retry_in_place?(%Arb.Error{reason: reason})
-      end
-    end
-  end
-
-  describe "relay_state_unknown?/1" do
-    test "a failed verification latched before it read back" do
-      assert Arb.Error.relay_state_unknown?(@verification_failed)
-      assert Arb.Error.relay_state_unknown?(%Arb.Error{reason: @verification_failed})
-    end
-
-    test "nothing else reached the latch" do
-      for reason <- (@retry_in_place ++ @fatal) -- [@verification_failed] do
-        refute Arb.Error.relay_state_unknown?(reason)
-        refute Arb.Error.relay_state_unknown?(%Arb.Error{reason: reason})
       end
     end
   end
