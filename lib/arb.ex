@@ -267,6 +267,16 @@ defmodule Arb do
   `{:error, {:usb, "Input/Output Error"}}` — this may resolve it. The effect is
   similar to replugging the device.
 
+  Including the part after the plug goes back in. The board re-enumerates, and
+  until it is back every call answers `:not_found`. `:ok` here means the reset
+  was issued, not that the board is ready — so **do not read the next call's
+  failure as the reset having failed**.
+
+  How long it stays away is the host's business: a hub, a loaded machine or
+  another kernel each answer differently. `Arb.Error.retryable?/1` vouches for
+  `:not_found`, so retrying until the board answers is what finds out; a delay
+  guessed in advance is either too short or wasted.
+
   ## Examples
 
       Arb.reset_device(board)

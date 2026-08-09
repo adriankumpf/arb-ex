@@ -99,6 +99,9 @@ swappable. `Arb.Usb` documents when to replace one.
 - `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so `board/2` and
   `set_relays/3` spec their option lists as more than `keyword` and the accepted
   values are visible in the spec
+- Documentation for the re-enumeration that follows `Arb.reset_device/1`, where
+  `:ok` means the reset was issued and not that the board is back — so the
+  `:not_found` that follows is not the reset having failed
 
 ### Fixed
 
