@@ -4,7 +4,8 @@ defmodule Arb.Usb do
 
   Built by `Arb.open/0`. Initialising it is by far the most expensive part of
   talking to a board — roughly 6.5 ms, against ~50 µs for everything else — so
-  build one and hold it for the lifetime of the node.
+  build one and hold it rather than opening one per call. `Arb` covers who
+  should hold it, which the section below is the reason for.
 
   It claims nothing and opens nothing, so contexts never conflict with each
   other or with another application using the same board, and it is safe to use
