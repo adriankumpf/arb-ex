@@ -3,3 +3,14 @@ rustflags = [
     "-C", "link-arg=-undefined",
     "-C", "link-arg=dynamic_lookup",
 ]
+
+# musl defaults to `crt-static`, which cannot produce a loadable `.so` — the BEAM
+# dlopen()s the NIF into a process that already has a libc.
+# See https://github.com/rust-lang/rust/issues/59302
+[target.'cfg(target_env = "musl")']
+rustflags = ["-C", "target-feature=-crt-static"]
+
+# 32-bit ARM has no native 64-bit atomics, so libgcc's out-of-line helpers have
+# to come from libatomic. See https://github.com/philss/rustler_precompiled/issues/53
+[target.arm-unknown-linux-gnueabihf]
+rustflags = ["-l", "dylib=atomic"]

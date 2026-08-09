@@ -28,3 +28,8 @@ default = ["vendored"]
 # that downloads the artifact never ran the build and cannot be assumed to have
 # `libusb-1.0.so.0`.
 vendored = ["rusb/vendored"]
+
+[profile.release]
+# Downloaded once per machine and then only dlopen()ed, so size beats build time.
+lto = true
+strip = "symbols"

@@ -16,7 +16,9 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       MIX_ENV: test
-      FORCE_BUILD: true
+      # CI tests the code in this repo, not a published artifact, so never let
+      # `RustlerPrecompiled` download one.
+      ARB_BUILD: true
 
     name: Elixir ${{ matrix.pair.elixir }} / OTP ${{ matrix.pair.otp }}
 

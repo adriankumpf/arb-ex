@@ -1,7 +1,10 @@
 FROM hexpm/elixir:1.20.3-erlang-29.0.5-debian-bookworm-20260803-slim AS releaser
 
+# `ARB_BUILD`: this image exists to exercise the code in this checkout, so build
+# the NIF rather than downloading the artifact of the last release.
 ENV RUST_VERSION="1.97.1" \
-    PATH=/root/.cargo/bin:$PATH
+    PATH=/root/.cargo/bin:$PATH \
+    ARB_BUILD=true
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

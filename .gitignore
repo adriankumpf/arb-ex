@@ -25,3 +25,5 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 arb-*.tar
 
+# The precompiled-NIF checksums, regenerated per release.
+/checksum-*.exs

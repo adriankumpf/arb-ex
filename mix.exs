@@ -21,7 +21,10 @@ defmodule Arb.MixProject do
 
   defp deps do
     [
-      {:rustler, "~> 0.38.0", runtime: false},
+      {:rustler_precompiled, "~> 0.9"},
+      # Optional so that installing `:arb` does not drag in a build toolchain; it
+      # is only reached when the precompiled artifact is bypassed.
+      {:rustler, "~> 0.38.0", runtime: false, optional: true},
       {:nimble_options, "~> 1.0"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
@@ -42,6 +45,8 @@ defmodule Arb.MixProject do
         "native/arb_native/.cargo/config.toml",
         "native/arb_native/Cargo*",
         "native/arb_native/src",
+        # Mandatory: without it every precompiled download fails verification.
+        "checksum-*.exs",
         "mix.exs",
         "README*",
         "CHANGELOG*",

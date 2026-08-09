@@ -10,9 +10,17 @@ An Elixir NIF for controlling the ABACOM CH341A relay board
 
 ### Requirements
 
-In order to compile a recent version of `rust` must be installed.
-[libusb](https://github.com/libusb/libusb) is not required — it is built from
-the copy vendored in the crate and linked into the NIF.
+None. A precompiled NIF with [libusb](https://github.com/libusb/libusb) linked
+into it is downloaded at build time, so neither the Rust toolchain nor
+`libusb-1.0-0-dev` has to be installed. Artifacts are published for:
+
+- **Linux** — `x86_64` and `aarch64` (glibc and musl), `armv7` (glibc)
+- **macOS** — `aarch64`, `x86_64`
+
+Anywhere else, Windows included, the NIF is compiled from source instead, which
+needs Rust and a C compiler — still not `libusb`, which is built from the copy
+vendored in the crate. `ARB_BUILD=true` forces a source build on a supported
+target too.
 
 ### Installation
 
@@ -72,6 +80,21 @@ context per call — is covered in the [changelog](CHANGELOG.md).
 docker build -t arb-ex .
 docker run --privileged -it arb-ex
 ```
+
+### Releasing
+
+The precompiled artifacts have to exist before the package is published, because
+the checksum file that pins them is built from what the release actually holds.
+
+1. Bump `@version` in `mix.exs` and land it.
+2. `git tag v<version> && git push origin master --tags` — this runs
+   `.github/workflows/release.yml`, which builds every target and attaches the
+   artifacts to the GitHub release.
+3. Wait for all of them. A partial release yields a checksum file missing those
+   targets, and users on them get a download error at compile time.
+4. `mix rustler_precompiled.download Arb.Native --all --print`, which writes
+   `checksum-Elixir.Arb.Native.exs`.
+5. `mix hex.publish`. It refuses to build without that file.
 
 ## See also
 

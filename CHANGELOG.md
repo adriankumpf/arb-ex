@@ -96,6 +96,13 @@ Three behaviour changes the table does not show:
   non-exhaustive error type reaches Elixir
 - `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so the accepted option
   values are visible in the specs
+- **Precompiled NIFs.** Installing `:arb` no longer requires the Rust toolchain,
+  and no longer requires `libusb` either — libusb is compiled from the copy the
+  crate vendors and linked into the artifact, so nothing is expected of the host.
+  Artifacts are published for Linux `x86_64`/`aarch64` (glibc and musl) and
+  `armv7` (glibc), and for macOS `aarch64`/`x86_64`. Anywhere else it falls back
+  to building from source, which needs Rust and a C compiler. `ARB_BUILD=true`
+  forces that build on a supported target too
 
 ### Fixed
 
