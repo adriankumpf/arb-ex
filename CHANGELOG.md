@@ -8,8 +8,7 @@ context and a board handle. This release passes that shape through to Elixir:
 
 ### Migrating from 0.19
 
-Open a context once and keep it — that is where the release's saving lives.
-`Arb.open/0` costs ~6.5 ms, almost entirely `libusb_init`; every other call
+Open a context once and hold it. `Arb.open/0` costs ~6.5 ms; every other call
 costs ~50 µs. Before 0.20 each call paid the 6.5 ms.
 
 ```elixir
@@ -37,42 +36,38 @@ board = Arb.board(usb, port: 3)
 | `{:io, msg}`                        | gone — no library path could produce it                          |
 | —                                   | `:busy`, `{:unknown, msg}`                                       |
 
-Who holds the context is now your decision, because a held context is **not
-self-healing**: where 0.19 built a fresh one per call and therefore recovered
-from a soured libusb state by accident, 0.20 does not. Keep it somewhere
-swappable. `Arb.Usb` documents when to replace one, and what a replacement does
-and does not fix.
+Three behaviour changes the table does not show:
 
-Hold one per thing that owns a recovery — a process, or a board — rather than
-one for the node; the decision is about recovery, not throughput. Holding the
-`Arb.Board` is enough to hold the context with it.
+- **`relays/1` does not self-test.** `get_active/1` silently wrote an inverted
+  pattern to the shift register, read it back and undid it. If you read in order
+  to vet the board, call `self_test/1` yourself
+- **A held context is not self-healing.** 0.19 built a fresh one per call and so
+  recovered from a soured libusb state by accident; 0.20 does not. Hold it
+  somewhere swappable, per process or per board — `Arb` and `Arb.Usb` cover when
+  to replace one and what a replacement does not fix
+- **`reset_device/1` returns before the board is back.** `:ok` means the reset
+  was issued; the board re-enumerates, so a `:not_found` right after is not the
+  reset having failed
 
 ### Changed (**breaking**)
 
 - Replace `activate/2`, `get_active/1` and `reset/1` with `set_relays/3`,
   `relays/1` and `reset_device/1`, taking an `Arb.Board` rather than a `:port`
-  option. `reset/1` in particular read like "turn all the relays off"; it is a
-  USB reset and leaves the relay outputs untouched
-- Split the board's self-test out of the read. `get_active/1` performed a hidden
-  read-modify-write — an inverted test pattern written to the shift register,
-  read back and undone — that doubled its cost and was not mentioned by its name.
-  The check is now `self_test/1`, and a read costs 28 USB transfers rather than
-  56. **Callers that relied on reading to vet the board must call `self_test/1`
-  themselves**
-- Give `:verification_failed` the relay ids it expected and read back. It
-  previously carried nothing, so a caller was told the read-back disagreed but
-  not how
+  option. `reset/1` read like "turn all the relays off"; it is a USB reset and
+  leaves the relay outputs untouched
+- Split the board's self-test out of the read, halving its cost — 28 USB
+  transfers rather than 56. The check is now `self_test/1`
+- Give `:verification_failed` the relay ids it expected and read back; it
+  previously carried nothing
 - Rename `:bad_device` to `:self_test_failed`
-- Report a board held by another application as `:busy` rather than as
+- Report a board held by another application as `:busy` rather than
   `{:usb, "Resource busy"}`, which made it indistinguishable from a real USB
-  fault even though it is normal and retryable on a shared board
-- Validate `:port` as a byte rather than as any non-negative integer. `arb` takes
-  a `u8`, so a larger number previously reached the NIF and failed to decode with
-  an opaque `ArgumentError`
+  fault even though it is normal and retryable
+- Validate `:port` as a byte. `arb` takes a `u8`, so a larger number previously
+  reached the NIF and failed to decode with an opaque `ArgumentError`
 - Carry `arb`'s own rendering on `Arb.Error` as `:message` instead of re-deriving
-  it in Elixir, so the wording cannot drift from the pinned revision. Errors the
-  NIF produces read as before; a hand-built `%Arb.Error{}` carrying no `:message`
-  now renders as its reason
+  it in Elixir. Errors the NIF produces read as before; a hand-built
+  `%Arb.Error{}` carrying no `:message` now renders as its reason
 
 ### Removed (**breaking**)
 
@@ -84,32 +79,23 @@ one for the node; the decision is about recovery, not throughput. Holding the
 - `Arb.board/2` and `Arb.Board`, a handle to one board. It holds a selector, not
   a device and not a USB claim, so it is free to build and never locks another
   application out of a shared board
-- `Arb.list_boards/1`, which returns every attached board in a stable order. An
-  enumerated board is named by where it sits on the USB tree rather than by port
-  number, so it always resolves back to the board it came from. An empty list
-  means no board is attached rather than `:not_found`
+- `Arb.list_boards/1`, which returns every attached board in a stable order,
+  named by where it sits on the USB tree rather than by port number. An empty
+  list means no board is attached rather than `:not_found`
 - `Arb.Board.port/1`, and an `Inspect` for `Arb.Board` that renders
-  `#Arb.Board<port 3 (1-1.3)>` — enough to tell apart two boards that share a
-  port number
+  `#Arb.Board<port 3 (1-1.3)>` — enough to tell apart two boards sharing a port
+  number
 - `Arb.self_test/1`, the read-back check `get_active/1` used to perform on the
   way past. It moves no relay, so it is safe to call on a live board
+- `Arb.Error.retryable?/1` and `Arb.Error.moved_relays?/1` — which reasons are
+  worth another attempt, and which one leaves the relays somewhere unknown — so
+  a caller no longer re-encodes that list and goes a release out of date. Each
+  takes a bare reason as well as an `%Arb.Error{}`, for callers that cannot match
+  the struct
 - The `{:unknown, message}` error reason, which is how a variant added to `arb`'s
-  non-exhaustive error type reaches Elixir without the NIF failing to compile
-- `Arb.Error.retryable?/1` and `Arb.Error.moved_relays?/1`, answering as
-  functions what the `Arb.Error` typedoc previously only argued in prose — which
-  reasons are worth another attempt, and which one leaves the relays somewhere
-  unknown — so that a caller no longer re-encodes that list and goes a release
-  out of date. Each takes a bare reason as well as an `%Arb.Error{}`, for callers
-  that cannot match the struct
-- `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so `board/2` and
-  `set_relays/3` spec their option lists as more than `keyword` and the accepted
-  values are visible in the spec
-- Documentation for the re-enumeration that follows `Arb.reset_device/1`, where
-  `:ok` means the reset was issued and not that the board is back — so the
-  `:not_found` that follows is not the reset having failed
-- Documentation for what replacing a soured context can and cannot fix, in
-  `Arb.Usb`: a replacement is unvetted until `self_test/1` says otherwise, and it
-  reaches no device, so a wedged board wants `reset_device/1` instead
+  non-exhaustive error type reaches Elixir
+- `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so the accepted option
+  values are visible in the specs
 
 ### Fixed
 
@@ -118,8 +104,8 @@ Inherited from `arb` 0.8.0:
 - Re-attach the kernel driver when the USB interface is released. It was
   previously detached on open and never restored
 - Raise the USB bulk timeouts to 1000 ms, from 10 ms for reads and 100 ms for
-  writes. Ten milliseconds for a USB round trip is tight enough to fail
-  spuriously on a loaded host or through a hub, and nothing retries behind it
+  writes. Ten milliseconds for a USB round trip fails spuriously on a loaded host
+  or through a hub, and nothing retries behind it
 - Restore the shift register when a self-test fails. The check returned on
   mismatch before putting the register back, so a failure made the *next* read
   disagree with the latched outputs. No relay moved either way
