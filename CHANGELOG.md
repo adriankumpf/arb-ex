@@ -96,6 +96,9 @@ swappable. `Arb.Usb` documents when to replace one.
   unknown — so that a caller no longer re-encodes that list and goes a release
   out of date. Each takes a bare reason as well as an `%Arb.Error{}`, for callers
   that cannot match the struct
+- `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so `board/2` and
+  `set_relays/3` spec their option lists as more than `keyword` and the accepted
+  values are visible in the spec
 
 ### Fixed
 

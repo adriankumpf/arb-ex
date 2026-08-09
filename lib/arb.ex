@@ -101,6 +101,12 @@ defmodule Arb do
   """
   @type relay_id :: 1..8
 
+  @typedoc "An option to `board/2`."
+  @type board_option :: {:port, Board.port_no()}
+
+  @typedoc "An option to `set_relays/3`."
+  @type set_relays_option :: {:verify, boolean}
+
   @doc """
   Initialises libusb.
 
@@ -122,7 +128,14 @@ defmodule Arb do
   Names a relay board reachable through `usb`.
 
   Resolves nothing and touches no hardware: the board is looked up when an
-  operation is called on it, so this cannot fail.
+  operation is called on it, so nothing the hardware does can make this fail.
+
+  It can still be called wrongly. A `:port` outside `0..255` raises
+  `NimbleOptions.ValidationError` rather than returning an `Arb.Error` — that is
+  a caller's mistake, not something a board reported, and the two are worth
+  keeping apart. A port almost always arrives from configuration, though, so
+  validate it where it enters your application if you would rather a
+  misconfigured release fail there than raise out of an `init/1`.
 
   ## Options
 
@@ -140,7 +153,7 @@ defmodule Arb do
 
   """
   @doc since: "0.20.0"
-  @spec board(Usb.t(), keyword) :: Board.t()
+  @spec board(Usb.t(), [board_option]) :: Board.t()
   def board(%Usb{reference: usb}, opts \\ []) do
     opts = NimbleOptions.validate!(opts, @board_schema)
     Native.board(usb, opts[:port])
@@ -171,6 +184,10 @@ defmodule Arb do
   Activates the relays with the given ids, deactivating every relay not in the
   list. An empty list deactivates all relays.
 
+  An id outside `1..8` raises `ArgumentError`, as a `:port` outside its range
+  does on `board/2` and for the same reason. The ids are checked before the board
+  is claimed, so one bad id cannot latch the good ones alongside it.
+
   ## Options
 
   #{NimbleOptions.docs(@set_relays_schema)}
@@ -185,7 +202,8 @@ defmodule Arb do
 
   """
   @doc since: "0.20.0"
-  @spec set_relays(Board.t(), [relay_id], keyword) :: :ok | {:error, Arb.Error.t()}
+  @spec set_relays(Board.t(), [relay_id], [set_relays_option]) ::
+          :ok | {:error, Arb.Error.t()}
   def set_relays(%Board{reference: board}, ids, opts \\ []) when is_list(ids) do
     Enum.each(ids, fn
       id when id in 1..8 -> :ok

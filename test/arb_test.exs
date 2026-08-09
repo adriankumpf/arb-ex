@@ -23,6 +23,12 @@ defmodule ArbTest do
       end
     end
 
+    test "rejects the whole list for one bad id" do
+      # The documented promise: the ids are checked before the board is claimed,
+      # so a bad id cannot latch the good ones alongside it.
+      assert_raise ArgumentError, ~r/got: 9/, fn -> Arb.set_relays(board(), [1, 9]) end
+    end
+
     test "rejects a non-list relay argument" do
       # Use Function.identity/1 to hide the type from compile-time analysis
       assert_raise FunctionClauseError, fn -> Arb.set_relays(board(), Function.identity(1)) end
