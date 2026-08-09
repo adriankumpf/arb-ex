@@ -1,6 +1,9 @@
 # The directory Mix will write compiled artifacts to.
 /_build/
 
+# Where the NIF lands, whether downloaded or built locally.
+/priv/native/
+
 # If you run "mix test --cover", coverage assets end up here.
 /cover/
 

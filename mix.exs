@@ -37,7 +37,8 @@ defmodule Arb.MixProject do
     [
       files: [
         "lib",
-        "priv",
+        # No "priv": it would ship the build host's `arb_native.so` to every
+        # platform, and it would be preferred over the artifact.
         "native/arb_native/.cargo/config.toml",
         "native/arb_native/Cargo*",
         "native/arb_native/src",
