@@ -39,6 +39,8 @@ defmodule Arb.ErrorTest do
     :self_test_failed,
     @verification_failed,
     {:unexpected_transfer_length, "read 3 of 4 bytes"},
+    # Not merely unhelped by a retry: a retried read succeeds and lies.
+    {:register_out_of_sync, "Operation timed out"},
     {:usb, "Input/Output Error"},
     {:unknown, "something new"}
   ]

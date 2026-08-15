@@ -45,6 +45,16 @@ defmodule Arb.Error do
       reading back, so their physical state is unknown — `expected`, `actual`, or
       neither. `Arb.relays/1` is how you find out what actually landed.
 
+  `{:register_out_of_sync, cause}` is the one where retrying is worse than
+  useless. The relays hang off a shift register and reading it is destructive, so
+  every read writes back what it consumed; this reason is that round trip coming
+  apart. No relay moved, but the board's *account* of them is gone, and that
+  account is what later reads report, so the next read can succeed and answer
+  `{:ok, []}` for a board driving eight live outputs. `Arb.set_relays/3` writes
+  the register and the outputs together, which is the way back. See [What a read
+  reports](`Arb.relays/1`). `cause` is the transport failure that interrupted the
+  round trip, carried for logging rather than for matching on.
+
   It is not the only failure that can leave the relays somewhere unknown, and
   which ones can is a property of the call rather than of the reason: the same
   `{:usb, _}` moved nothing on a read and may have latched on a write. See
@@ -58,6 +68,7 @@ defmodule Arb.Error do
           | :self_test_failed
           | {:verification_failed, expected :: [Arb.relay_id()], actual :: [Arb.relay_id()]}
           | {:unexpected_transfer_length, String.t()}
+          | {:register_out_of_sync, cause :: String.t()}
           | {:usb, String.t()}
           | {:unknown, String.t()}
 
@@ -92,6 +103,10 @@ defmodule Arb.Error do
   them: it carries a bug as readily as a variant from a newer `arb`, so it is not
   an "unclassified, treat gently" bucket. Nor is a reason this library grows
   later, until this function is taught otherwise.
+
+  `{:register_out_of_sync, _}` is the sharpest case of `false` meaning something
+  rather than nothing: a retried read there succeeds and hands back a confident
+  wrong answer. Write a known state instead.
 
   A function, not a guard, so a `when reason in [:busy, :not_found]` this
   replaces moves into the clause body.

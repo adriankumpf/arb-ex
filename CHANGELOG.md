@@ -86,13 +86,23 @@ Three behaviour changes the table does not show:
   `#Arb.Board<port 3 (1-1.3)>` — enough to tell apart two boards sharing a port
   number
 - `Arb.self_test/1`, the read-back check `get_active/1` used to perform on the
-  way past. It moves no relay, so it is safe to call on a live board
+  way past. It moves no relay, so it is safe to call on a live board, and it
+  returns `{:ok, ids}`, the relays it found while checking. The check has to read
+  the register before it can write its test pattern, so a caller wanting both a
+  verdict and a state gets them from one claim instead of following it with
+  `relays/1`
 - `Arb.Error.retry_in_place?/1` — which reasons are worth another attempt as
   they stand, so a caller no longer re-encodes that list and goes a release out
   of date. It takes a bare reason as well as an `%Arb.Error{}`, for callers that
   cannot match the struct
 - The `{:unknown, message}` error reason, which is how a variant added to `arb`'s
   non-exhaustive error type reaches Elixir
+- The `{:register_out_of_sync, cause}` error reason, for a read that could not
+  put the shift register back (see *Fixed*). No relay moved, but the board's
+  account of them is gone, so a later `relays/1` can succeed and report nothing
+  active on a board driving eight live outputs. It is the one failure where
+  retrying the read is the wrong answer; `set_relays/3` writes the register and
+  the outputs together again
 - `t:Arb.board_option/0` and `t:Arb.set_relays_option/0`, so the accepted option
   values are visible in the specs
 - **Precompiled NIFs.** Installing `:arb` no longer requires the Rust toolchain,
@@ -112,9 +122,21 @@ Inherited from `arb` 0.8.0:
 - Raise the USB bulk timeouts to 1000 ms, from 10 ms for reads and 100 ms for
   writes. Ten milliseconds for a USB round trip fails spuriously on a loaded host
   or through a hub, and nothing retries behind it
+- Put the shift register back on every path out of a read, failures included.
+  Reading it clocks zeros in, so every read writes back what it read; a USB error
+  between the two halves left the register holding zeros while the outputs held
+  relays. Retrying, the documented remedy for a transient USB error, is what made
+  it stick: the retried read succeeded and answered `{:ok, []}` for an energized
+  board. Where the contents are genuinely gone the caller now gets
+  `{:register_out_of_sync, cause}` instead of the transport error that invited
+  the retry
 - Restore the shift register when a self-test fails. The check returned on
   mismatch before putting the register back, so a failure made the *next* read
   disagree with the latched outputs. No relay moved either way
+- Put the *latched* value back into the shift register after a failed
+  verification, rather than the value that was read back. A mismatch implicates
+  the read path, so leaving its answer in the register made the next read agree
+  with the fault instead of with the relays
 
 ## Earlier releases
 

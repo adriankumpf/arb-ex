@@ -49,7 +49,9 @@ defmodule Arb do
 
   `Arb.relays/1` is a plain read that takes the shift register at its word.
   `Arb.self_test/1` is the separate check that the board is still answering
-  correctly; it moves no relay, so it is safe on a board driving live outputs.
+  correctly; it moves no relay, so it is safe on a board driving live outputs,
+  and it returns the relays it found while checking, so where you want both a
+  verdict and a state that is one claim rather than two.
 
   A read followed by a write is two claims rather than one — see `Arb.Board` for
   what that means on a board shared with another application.
@@ -214,6 +216,13 @@ defmodule Arb do
   within the limit under [What a read reports](`relays/1`), which the same
   failure can put on the answer.
 
+  `{:register_out_of_sync, _}` is the exception that says *more*. Here it can
+  only come from the read-back, which runs after the latch, so the relays are
+  holding the ids you asked for. What was lost is the shift register, and with it
+  the board's ability to report them, so this is the one failure where looking is
+  the wrong move: write the state again instead, which puts the register and the
+  outputs back in step.
+
   Which failures leave them unknown is a property of *this* call rather than of
   the reason, which is why `Arb.Error` has no function to ask: the same
   `{:usb, _}` moved nothing when `relays/1` raised it. No other call here can
@@ -262,18 +271,24 @@ defmodule Arb do
   A USB failure between the two halves breaks that equality: the read consumed
   the register and the write-back did not land, leaving the register holding the
   zeros the read shifted in while the outputs stay latched where they were. The
-  relays have not moved — nothing here latches — but a later read reports the
-  register it finds, so it can answer `{:ok, []}` for a board driving live
-  outputs.
+  relays have not moved — nothing here latches — but the register no longer says
+  where they are.
 
-  It does not clear itself. A repeat read finds the same register and puts the
-  same contents back; only a `set_relays/3` that succeeds writes the register and
-  the outputs together again. So a read taken to settle where the relays are
+  That failure is announced. It comes back as `{:register_out_of_sync, cause}`
+  rather than as the transport error underneath, because a transport error's
+  documented remedy is to retry and retrying is what makes this stick: the
+  retried read finds the register the last one left and succeeds, so it answers
+  `{:ok, []}` for a board driving live outputs. The announcement is that one call
+  only. This library holds no state between calls, so the reads after it look no
+  different from good ones.
+
+  It does not clear itself either. A repeat read finds the same register and puts
+  the same contents back; only a `set_relays/3` that succeeds writes the register
+  and the outputs together again. So a read taken to settle where the relays are
   after a failed write — see [After a failure](`set_relays/3`) — is trustworthy
-  unless that write, or a read since, failed partway through a register
-  write-back, and a `{:usb, _}` or `{:unexpected_transfer_length, _}` from either
-  is exactly that possibility. With the outputs unknown either way, the honest
-  recovery is to drive them somewhere known rather than to keep asking.
+  unless that write, or a read since, answered `{:register_out_of_sync, _}`. With
+  the outputs unknown either way, the honest recovery is to drive them somewhere
+  known rather than to keep asking.
 
   ## Examples
 
@@ -286,29 +301,37 @@ defmodule Arb do
   def relays(%Board{reference: board}), do: Native.relays(board)
 
   @doc """
-  Checks that the board answers correctly, without moving any relay.
+  Checks that the board answers correctly, without moving any relay, and returns
+  the ids of the relays it found active.
 
   Writes an inverted test pattern through the shift register and reads it back.
   The pattern is never latched and the register's original contents are put back
   afterwards, so this is safe to call on a board driving live outputs. Fails with
   `:self_test_failed` if the pattern does not survive the round trip.
 
+  Those original contents are what it returns. The check cannot write its pattern
+  without first reading what the register holds, so a caller wanting both a
+  verdict and a state gets them from one claim rather than following this with
+  `relays/1`, which would be a second claim and, on a board shared with another
+  application, a second moment.
+
   A diagnostic rather than a guard on the operating path: `set_relays/3` with
   `verify: true` already writes, latches, reads back and compares within a single
   claim — everything this covers, on the value you actually asked for, plus the
   latch it never touches. And since a self-test is its own claim, it vouches for
-  no particular `relays/1` call either side of it. Reach for it at startup, from a
-  health check, or when a board is suspect.
+  no other `relays/1` call either side of it, only for the state it hands back
+  itself. Reach for it at startup, from a health check, or when a board is
+  suspect.
 
   ## Examples
 
       Arb.self_test(board)
-      #=> :ok
+      #=> {:ok, [1, 3, 6]}
 
   """
   @doc since: "0.20.0"
-  @spec self_test(Board.t()) :: :ok | {:error, Arb.Error.t()}
-  def self_test(%Board{reference: board}), do: to_ok(Native.self_test(board))
+  @spec self_test(Board.t()) :: {:ok, [relay_id]} | {:error, Arb.Error.t()}
+  def self_test(%Board{reference: board}), do: Native.self_test(board)
 
   @doc """
   Performs a USB reset on the relay board.

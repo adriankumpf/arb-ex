@@ -15,7 +15,7 @@ crate-type = ["cdylib"]
 rustler = { version = "0.38.0", features = ["nif_version_2_16"] }
 # TODO: swap for `tag = "v0.8.0"` once it is cut. Untagged until this branch and a
 # downstream deployment have validated it.
-arb = { git = "https://github.com/adriankumpf/abacom-relay-board", rev = "7b990e87b5195e7076da7974b8be8041c1e857af" }
+arb = { git = "https://github.com/adriankumpf/abacom-relay-board", rev = "cae8ff32ddcc5efafd9cd567457cadf1bec372dc" }
 # Not called directly — `arb` owns every rusb call. Named here only so `vendored`
 # below has a dependency to forward to; cargo unifies the feature onto the copy
 # `arb` already resolves.

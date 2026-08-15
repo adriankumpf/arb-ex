@@ -55,7 +55,13 @@ iex> Arb.set_relays(board, [])
 ```
 
 `Arb.relays/1` is a plain read. `Arb.self_test/1` is the separate health check —
-it moves no relay, so it is safe on a board driving live outputs.
+it moves no relay, so it is safe on a board driving live outputs, and it hands
+back the relays it found on its way past:
+
+```elixir
+iex> Arb.self_test(board)
+{:ok, [1, 4, 7]}
+```
 
 With more than one board attached, `Arb.list_boards/1` enumerates them and names
 each unambiguously:
