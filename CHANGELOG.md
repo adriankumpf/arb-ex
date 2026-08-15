@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.20.0-beta.0] — unreleased
+## [0.20.0-beta.1] — unreleased
 
 Tracks `arb` 0.8.0, which replaced its three free functions with a libusb
 context and a board handle. This release passes that shape through to Elixir:
