@@ -64,6 +64,7 @@ impl From<arb::Error> for ArbError {
                 busy,
                 verification_failed,
                 unexpected_transfer_length,
+                register_out_of_sync,
                 self_test_failed,
                 usb,
                 unknown
@@ -90,6 +91,12 @@ impl From<arb::Error> for ArbError {
             )),
             err @ arb::Error::UnexpectedTransferLength { .. } => {
                 Reason::Message((atom::unexpected_transfer_length(), err.to_string()))
+            }
+            // The payload is the transport failure underneath, not the whole
+            // rendering: the sentence around it is already in `message`, and what
+            // a log wants from here is the cause `Error::source` would give.
+            arb::Error::RegisterOutOfSync { source } => {
+                Reason::Message((atom::register_out_of_sync(), source.to_string()))
             }
             arb::Error::Usb(err) => Reason::Message((atom::usb(), err.to_string())),
             // `arb::Error` is `#[non_exhaustive]`: a variant added upstream must
@@ -174,9 +181,12 @@ fn relays(board: ResourceArc<BoardResource>) -> Result<Vec<u8>, ArbError> {
     Ok(to_ids(board.0.relays()?))
 }
 
+/// Returns the relays the check found active on its way past: it has to read the
+/// register before it can write its test pattern, so the verdict and the state
+/// come out of one claim.
 #[rustler::nif(schedule = "DirtyIo")]
-fn self_test(board: ResourceArc<BoardResource>) -> Result<(), ArbError> {
-    Ok(board.0.self_test()?)
+fn self_test(board: ResourceArc<BoardResource>) -> Result<Vec<u8>, ArbError> {
+    Ok(to_ids(board.0.self_test()?))
 }
 
 #[rustler::nif(schedule = "DirtyIo")]
