@@ -12,7 +12,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-rustler = { version = "0.38.0", features = ["nif_version_2_16"] }
+rustler = { version = "0.39.0", features = ["nif_version_2_16"] }
 # TODO: swap for `tag = "v0.8.0"` once it is cut. Untagged until this branch and a
 # downstream deployment have validated it.
 arb = { git = "https://github.com/adriankumpf/abacom-relay-board", rev = "cae8ff32ddcc5efafd9cd567457cadf1bec372dc" }
