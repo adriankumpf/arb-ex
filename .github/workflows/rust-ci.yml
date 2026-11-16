@@ -53,4 +53,10 @@ jobs:
         run: cargo clippy --manifest-path=${{ matrix.manifest }} --all-targets -- -Dwarnings
 
       - name: Run tests
+        # Since rustler 0.39 the enif_* functions are plain extern symbols. The
+        # BEAM provides them when it loads the NIF, but the test executable has
+        # nothing to resolve them against. The unit tests never call into the
+        # VM, so leave those symbols unresolved instead of failing the link.
+        env:
+          RUSTFLAGS: -C link-arg=-Wl,--unresolved-symbols=ignore-in-object-files
         run: cargo test --manifest-path=${{ matrix.manifest }}
