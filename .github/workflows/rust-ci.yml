@@ -57,6 +57,9 @@ jobs:
         # BEAM provides them when it loads the NIF, but the test executable has
         # nothing to resolve them against. The unit tests never call into the
         # VM, so leave those symbols unresolved instead of failing the link.
+        # rust-lld (the x86_64 default) keeps them as dynamic imports, and
+        # rustc's `-z now` would make the loader reject the binary at startup;
+        # `-z lazy` defers that to a first call, which never happens.
         env:
-          RUSTFLAGS: -C link-arg=-Wl,--unresolved-symbols=ignore-in-object-files
+          RUSTFLAGS: -C link-arg=-Wl,--unresolved-symbols=ignore-in-object-files -C link-arg=-Wl,-z,lazy
         run: cargo test --manifest-path=${{ matrix.manifest }}
